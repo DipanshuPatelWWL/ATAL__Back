@@ -30,8 +30,8 @@ const app = express();
 const allowedOrigins = [
   // "http://localhost:5173",
   // "http://localhost:5174",
-  "https://atal-homepage-new.vercel.app",
-  "https://atal-dashboard-font.vercel.app",
+  "https://atal-home-updated.vercel.app",
+  "https://atal-dashboard-updated.vercel.app/loginNew",
 ];
 
 // CORS middleware
