@@ -1,4 +1,6 @@
 const Vendor = require("../model/vendor-model");
+const User = require("../model/user-model")
+const bcrypt = require("bcryptjs");
 
 // Update Vendor Profile
 exports.updateProfile = async (req, res) => {
@@ -21,6 +23,13 @@ exports.updateProfile = async (req, res) => {
       "updatedAt",
     ];
     restrictedFields.forEach((field) => delete updateData[field]);
+
+    // Handle password update (update User model, not Vendor)
+    if (req.body.vendorPassword) {
+      const hashedPassword = await bcrypt.hash(req.body.vendorPassword, 10);
+      await User.findByIdAndUpdate(req.user.id, { password: hashedPassword });
+      delete updateData.password; // remove from vendor update
+    }
 
     // Handle uploaded files
     if (req.files) {
