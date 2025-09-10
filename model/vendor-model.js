@@ -12,6 +12,7 @@ const vendorSchema = new mongoose.Schema(
     businessNumber: String,
 
     userId: { type: String },
+    vendorPassword: String,
 
     contactName: String,
     contactTitle: String,

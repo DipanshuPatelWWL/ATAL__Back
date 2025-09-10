@@ -61,7 +61,6 @@ const getTestimonial = async (req, res) => {
 
 //Update testimonial
 const updateTestimonial = async (req, res) => {
-
     try {
         const { id } = req.params
         const { fullName, heading, description, rating } = req.body;

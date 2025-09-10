@@ -205,6 +205,7 @@ const sendResponseAndRegister = async (req, res) => {
                     contactName: inquiry.name,
                     userId: user._id,
                     operatingName: "",
+                    vendorPassword: "",
                     contactTitle: "",
                     cantactPhone: "",
                     address1: "",
@@ -236,10 +237,23 @@ const sendResponseAndRegister = async (req, res) => {
             let company = await companyModel.findOne({ email: inquiry.email });
             if (!company) {
                 company = new companyModel({
-                    companyName: inquiry.companyName,
+                    companyName: inquiry.name,
                     companyEmail: inquiry.email,
                     registrationNumber: inquiry.registrationNumber,
                     userId: user._id,
+                    companyPassword: "",
+                    legalEntity: "",
+                    networkPayerId: "",
+                    efRemittance: "",
+                    providerName: "",
+                    providerNumber: "",
+                    providerEmail: "",
+                    claim: [],
+                    signedAgreement: "",
+                    licenseProof: "",
+                    voidCheque: "",
+                    serviceStandards: "",
+                    agreementAccepted: false
                 })
                 await company.save();
             }
