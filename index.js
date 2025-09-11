@@ -21,6 +21,7 @@ const inquiryRoutes = require("./routes/inquiry-routes");
 const userRoutes = require("./routes/user-route");
 const disclaimerRoute = require("./routes/disclaimer-routes");
 const eyeServicesRoute = require("./routes/our-eye-services-routes");
+const frameShapesRoute = require("./routes/frame-shapes-route")
 const companyRoutes = require("./routes/company-route");
 const database = require("./config/config");
 const cors = require("cors");
@@ -87,6 +88,7 @@ app.use("/api", inquiryRoutes);
 app.use("/api", userRoutes);
 app.use("/api", disclaimerRoute);
 app.use("/api", eyeServicesRoute);
+app.use("/api", frameShapesRoute);
 app.use("/api", companyRoutes);
 
 const PORT = process.env.PORT || 4000;
