@@ -3,10 +3,11 @@ const router = express.Router();
 const upload = require("../middleware/multer"); // your multer config
 
 const { authMiddleware } = require("../middleware/auth-middleware");
-const { updateCompProfile, getCompanyById } = require("../controller/company-controller");
+const { updateCompProfile, getCompanyById, getAllCompany } = require("../controller/company-controller");
 
 
-
+//get All company
+router.get("/getAllCOmpany", getAllCompany);
 
 // Get single company
 router.get("/getCompanyById/:id", getCompanyById);

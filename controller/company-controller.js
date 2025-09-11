@@ -2,7 +2,7 @@ const Company = require("../model/compnay-model");
 const User = require("../model/user-model")
 const bcrypt = require("bcryptjs");
 // Get all companies
-exports.getCompanies = async (req, res) => {
+exports.getAllCompany = async (req, res) => {
   try {
     const companies = await Company.find().sort({ createdAt: -1 });
     res.json({ success: true, companies });
