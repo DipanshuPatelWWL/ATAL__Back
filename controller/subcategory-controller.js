@@ -113,3 +113,27 @@ exports.getSubcategoriesByCatSec = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+// const Category = require("../model/category-model");
+
+// // Get subcategories by categoryId
+// exports.getSubcategoriesByCategoryId = async (req, res) => {
+//   try {
+//     const { cat_id } = req.params; // e.g. "68a2d2b600f5f5010fdd896c"
+
+//     const category = await Category.findById(cat_id);
+
+//     if (!category) {
+//       return res.status(404).json({ message: "Category not found" });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       subcategories: category.subCategoryNames,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
+

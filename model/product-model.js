@@ -7,6 +7,10 @@ const productSchema = new mongoose.Schema(
         product_price: { type: Number },
         product_sale_price: { type: Number },
         product_description: { type: String },
+        product_status: {
+            type: Boolean,
+            default: false
+        },
 
         // Multiple product images
         product_image_collection: [String],
