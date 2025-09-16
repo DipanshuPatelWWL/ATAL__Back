@@ -29,7 +29,7 @@ const cors = require("cors");
 
 const app = express();
 
-// Allowed origins
+// Allowed originss
 const allowedOrigins = [
   // "http://localhost:5173",
   // "http://localhost:5174",
