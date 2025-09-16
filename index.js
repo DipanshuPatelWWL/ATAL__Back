@@ -21,6 +21,7 @@ const inquiryRoutes = require("./routes/inquiry-routes");
 const userRoutes = require("./routes/user-route");
 const disclaimerRoute = require("./routes/disclaimer-routes");
 const eyeServicesRoute = require("./routes/our-eye-services-routes");
+const contactLensRoute = require("./routes/contact-lens-route")
 const companyRoutes = require("./routes/company-route");
 const frameShapesRoutes = require("./routes/frame-shapes-route");
 const database = require("./config/config");
@@ -88,6 +89,7 @@ app.use("/api", inquiryRoutes);
 app.use("/api", userRoutes);
 app.use("/api", disclaimerRoute);
 app.use("/api", eyeServicesRoute);
+app.use("/api", contactLensRoute);
 app.use("/api", companyRoutes);
 app.use("/api", frameShapesRoutes);
 // app.use("/api/products", product-routes);
