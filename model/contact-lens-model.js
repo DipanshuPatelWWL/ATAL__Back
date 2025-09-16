@@ -5,6 +5,8 @@ const LensSchema = new mongoose.Schema({
     total_price: { type: Number },
     sale_price: { type: Number },
     lens_type: { type: String },
+    material: { type: String },
+    description: { type: String },
     manufacturer: { type: String },
     water_content: { type: String },
     lens_image_collection: {

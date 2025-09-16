@@ -3,76 +3,6 @@ const Category = require("../model/category-model");
 const SubCategory = require("../model/subcategory-model");
 
 
-// const addLens = async (req, res) => {
-//     try {
-//         let lensData = { ...req.body };
-//         console.log("Incoming Lens Data:", lensData);
-
-//         // Find Category by name
-//         const category = await Category.findOne({
-//             categoryName: lensData.cat_sec,
-//         });
-
-//         if (!category) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: `Category '${lensData.cat_sec}' not found`,
-//             });
-//         }
-
-//         // Attach category reference
-//         lensData.cat_id = category._id;
-
-//         // Handle SubCategory (store subCategoryId instead of just name)
-//         if (lensData.subCategoryName) {
-//             let subCategory = await SubCategory.findOne({
-//                 subCategoryName: lensData.subCategoryName.trim(),
-//                 cat_id: category._id,
-//             });
-
-//             // If subcategory doesn't exist → create new
-//             if (!subCategory) {
-//                 subCategory = new SubCategory({
-//                     subCategoryName: lensData.subCategoryName.trim(),
-//                     cat_id: category._id,
-//                 });
-//                 await subCategory.save();
-//                 console.log(
-//                     `SubCategory '${subCategory.subCategoryName}' created under '${category.categoryName}'`
-//                 );
-//             }
-
-//             // Attach subcategory reference
-//             lensData.subCat_id = subCategory._id;
-//         }
-
-//         // Handle file uploads (multer fields)
-//         if (req.files) {
-//             if (req.files.lens_image_collection) {
-//                 lensData.lens_image_collection =
-//                     req.files.lens_image_collection.map((file) => file.filename);
-//             }
-//         }
-
-//         //Save lens
-//         const contactLens = new Contact_Lens(lensData);
-//         const savedLens = await contactLens.save();
-
-//         return res.status(201).json({
-//             success: true,
-//             message: "Lens added successfully",
-//             data: savedLens,
-//         });
-//     } catch (error) {
-//         return res.status(500).json({
-//             success: false,
-//             message: "Error while adding lens",
-//             error: error.message,
-//         });
-//     }
-// };
-
-
 const addLens = async (req, res) => {
     try {
         let lensData = { ...req.body };
@@ -177,8 +107,6 @@ const getAllLens = async (req, res) => {
         if (search) {
             query.$or = [
                 { lens_name: { $regex: search, $options: "i" } },
-                // { product_description: { $regex: search, $options: "i" } },
-                // { product_frame_material: { $regex: search, $options: "i" } },
             ];
         }
 
