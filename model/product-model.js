@@ -25,7 +25,17 @@ const productSchema = new mongoose.Schema(
 
         // Category support
         cat_sec: { type: String }, // e.g. "Sunglasses"
+        cat_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category",
+            required: true,
+        },
         subCategoryName: { type: String }, // e.g. "Round Frame"
+        subCat_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "SubCategory",
+            required: true,
+        },
 
         // Lens details
         product_lens_title1: { type: String },

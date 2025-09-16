@@ -1,4 +1,6 @@
 const Product = require("../model/product-model");
+const Category = require("../model/category-model");
+const SubCategory = require("../model/subcategory-model");
 
 const getProductByid = async (req, res) => {
     try {
@@ -34,26 +36,63 @@ const getProdcutByCategoryname = async (req, res) => {
     }
 };
 
-// Add Product
+
+
 const addProduct = async (req, res) => {
     try {
         let productData = { ...req.body };
+        // 🔎 Find Category by name
+        const category = await Category.findOne({
+            categoryName: productData.cat_sec,
+        });
+
+        if (!category) {
+            return res.status(400).json({
+                success: false,
+                message: `Category '${productData.cat_sec}' not found`,
+            });
+        }
+
+        // Attach category reference
+        productData.cat_id = category._id;
+
+        // 🔎 Handle SubCategory (store subCategoryId instead of just name)
+        if (productData.subCategoryName) {
+            let subCategory = await SubCategory.findOne({
+                subCategoryName: productData.subCategoryName.trim(),
+                cat_id: category._id,
+            });
+
+            // If subcategory doesn't exist → create new
+            if (!subCategory) {
+                subCategory = new SubCategory({
+                    subCategoryName: productData.subCategoryName.trim(),
+                    cat_id: category._id,
+                });
+                await subCategory.save();
+            }
+
+            // Attach subcategory reference
+            productData.subCat_id = subCategory._id;
+        }
 
         // Handle file uploads (multer fields)
         if (req.files) {
             if (req.files.product_image_collection) {
-                productData.product_image_collection = req.files.product_image_collection.map(
-                    (file) => file.filename
-                );
+                productData.product_image_collection =
+                    req.files.product_image_collection.map((file) => file.filename);
             }
             if (req.files.product_lens_image1 && req.files.product_lens_image1[0]) {
-                productData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+                productData.product_lens_image1 =
+                    req.files.product_lens_image1[0].filename;
             }
             if (req.files.product_lens_image2 && req.files.product_lens_image2[0]) {
-                productData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+                productData.product_lens_image2 =
+                    req.files.product_lens_image2[0].filename;
             }
         }
 
+        //Save product
         const product = new Product(productData);
         const savedProduct = await product.save();
 
@@ -70,6 +109,12 @@ const addProduct = async (req, res) => {
         });
     }
 };
+
+
+
+
+
+
 
 //  Get All Products (search + filter)
 const getAllProducts = async (req, res) => {
@@ -236,6 +281,47 @@ const getProductsByCategoryAndSub = async (req, res) => {
 };
 
 
+// Get Products by SubCategory ID
+const getProductBySubCatId = async (req, res) => {
+    try {
+        const { subCatId } = req.params;
+
+        if (!subCatId) {
+            return res.status(400).json({
+                success: false,
+                message: "SubCategory ID is required",
+            });
+        }
+
+        const products = await Product.find({ subCat_id: subCatId })
+            .populate("cat_id", "categoryName")       // get category name
+            .populate("subCat_id", "subCategoryName"); // get subcategory name
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No products found for this SubCategory",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            count: products.length,
+            data: products,
+        });
+    } catch (error) {
+        console.error("Error in getProductBySubCatId:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error while fetching products",
+            error: error.message,
+        });
+    }
+};
+
+
+
+
 
 module.exports = {
     addProduct,
@@ -245,5 +331,6 @@ module.exports = {
     deleteProduct,
     getProdcutByCategoryname,
     getProductByid,
-    getProductsByCategoryAndSub
+    getProductsByCategoryAndSub,
+    getProductBySubCatId
 };
