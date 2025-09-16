@@ -1,26 +1,36 @@
 const Category = require("../model/category-model");
 const SubCategory = require("../model/subcategory-model");
 
-// Add new category
 exports.addCategory = async (req, res) => {
   try {
     let { categoryName, subCategoryNames } = req.body;
 
-    // Ensure it's always an array
+    // Normalize subCategoryNames → always an array
     if (typeof subCategoryNames === "string") {
       subCategoryNames = subCategoryNames
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
     }
-    const newCategory = new Category({ categoryName, subCategoryNames });
+
+    const newCategory = new Category({
+      categoryName,
+      subCategoryNames: subCategoryNames || [], // ensure empty array if not provided
+    });
+
     await newCategory.save();
 
-    res.status(201).json({ message: "Category added", category: newCategory });
+    res.status(201).json({
+      success: true,
+      message: "Category added successfully",
+      category: newCategory,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
 
 // Fetch all categories
 exports.getCategories = async (req, res) => {

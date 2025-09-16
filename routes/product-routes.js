@@ -15,6 +15,15 @@ router.post(
     productController.addProduct
 );
 
+// 🔎 Search products (by name, category, subcategory)
+router.get("/products/search", productController.searchProducts);
+
+router.get("/getProducts/:cat_sec/:subCategoryName", productController.getProdcutByCategoryname);
+
+router.get("/getproductbyId/:id", productController.getProductById);
+
+
+
 router.get("/getAllProduct", productController.getAllProducts);
 router.get("/getProductById/:id", productController.getProductById);
 
@@ -31,6 +40,7 @@ router.put(
 
 router.delete("/deleteProduct/:id", protect, allowRoles("admin"), productController.deleteProduct);
 router.get("/getProducts/:cat_sec/:subCategoryName", productController.getProdcutByCategoryname)
-router.get("/getproductbyid/:id", productController.getProductByid)
+router.get("/getproductbyId/:id", productController.getProductById)
+router.get("/getProductBySubCatId/:subCatId", productController.getProductBySubCatId)
 
 module.exports = router;
