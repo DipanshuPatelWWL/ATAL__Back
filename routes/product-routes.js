@@ -20,7 +20,7 @@ router.get("/products/search", productController.searchProducts);
 
 router.get("/getProducts/:cat_sec/:subCategoryName", productController.getProdcutByCategoryname);
 
-router.get("/getproductbyid/:id", productController.getProductByid);
+router.get("/getproductbyId/:id", productController.getProductById);
 
 
 
@@ -40,7 +40,7 @@ router.put(
 
 router.delete("/deleteProduct/:id", protect, allowRoles("admin"), productController.deleteProduct);
 router.get("/getProducts/:cat_sec/:subCategoryName", productController.getProdcutByCategoryname)
-router.get("/getproductbyid/:id", productController.getProductByid)
+router.get("/getproductbyId/:id", productController.getProductById)
 router.get("/getProductBySubCatId/:subCatId", productController.getProductBySubCatId)
 
 module.exports = router;
