@@ -1,6 +1,7 @@
 const Product = require("../model/product-model");
 const Category = require("../model/category-model");
 const SubCategory = require("../model/subcategory-model");
+const mongoose = require("mongoose");
 
 // Get product by ID
 const getProductById = async (req, res) => {
@@ -157,15 +158,41 @@ const deleteProduct = async (req, res) => {
 };
 
 // Get products by categoryId + subCategoryId
+// const getProductsByCategoryAndSub = async (req, res) => {
+//   try {
+//     const { categoryId, subCategoryId } = req.params;
+//     const products = await Product.find({ cat_id: categoryId, subCat_id: subCategoryId });
+//     res.json(products);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+
+
+
+
+// GET /api/products/:categoryId/:subCategoryId
 const getProductsByCategoryAndSub = async (req, res) => {
   try {
     const { categoryId, subCategoryId } = req.params;
-    const products = await Product.find({ cat_id: categoryId, subCat_id: subCategoryId });
+
+    // Ensure valid ObjectIds
+    if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(subCategoryId)) {
+      return res.status(400).json({ error: "Invalid categoryId or subCategoryId" });
+    }
+
+    const products = await Product.find({
+      cat_id: new mongoose.mongo.ObjectId(categoryId),
+      subCat_id: new mongoose.mongo.ObjectId(subCategoryId),
+    });
+
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Search products
 const searchProducts = async (req, res) => {
