@@ -29,12 +29,12 @@ const cors = require("cors");
 
 const app = express();
 
-// Allowed originss
+// Allowed origin
 const allowedOrigins = [
-  // "http://localhost:5173",
-  // "http://localhost:5174",
-  "https://atal-home-updated.vercel.app",
-  "https://atal-dashboard-updated.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  // "https://atal-home-updated.vercel.app",
+  // "https://atal-dashboard-updated.vercel.app",
 ];
 
 // CORS middleware
