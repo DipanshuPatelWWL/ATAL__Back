@@ -173,23 +173,54 @@ const deleteProduct = async (req, res) => {
 
 
 // GET /api/products/:categoryId/:subCategoryId
+// const getProductsByCategoryAndSub = async (req, res) => {
+//   try {
+//     const { categoryId, subCategoryId } = req.params;
+
+//     // Ensure valid ObjectIds
+//     if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(subCategoryId)) {
+//       return res.status(400).json({ error: "Invalid categoryId or subCategoryId" });
+//     }
+
+//     const products = await Product.find({
+//       cat_id: new mongoose.mongo.ObjectId(categoryId),
+//       subCat_id: new mongoose.mongo.ObjectId(subCategoryId),
+//     });
+
+//     res.json(products);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+
+
 const getProductsByCategoryAndSub = async (req, res) => {
   try {
     const { categoryId, subCategoryId } = req.params;
 
-    // Ensure valid ObjectIds
-    if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(subCategoryId)) {
-      return res.status(400).json({ error: "Invalid categoryId or subCategoryId" });
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res.status(400).json({ message: "Invalid categoryId" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(subCategoryId)) {
+      return res.status(400).json({ message: "Invalid subCategoryId" });
     }
 
+    // Query products by ObjectId
     const products = await Product.find({
-      cat_id: new mongoose.mongo.ObjectId(categoryId),
-      subCat_id: new mongoose.mongo.ObjectId(subCategoryId),
+      cat_id: new mongoose.Types.ObjectId(categoryId),
+      subCat_id: new mongoose.Types.ObjectId(subCategoryId),
     });
 
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: "No products found" });
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
