@@ -51,6 +51,6 @@ router.delete(
 );
 
 
-router.get("/getProductByCat&sbuCatId/:cat_id/:subCat_id", productController.getProductsByCategoryAndSub)
+router.get("/products/:categoryId/:subCategoryId", productController.getProductsByCategoryAndSub)
 
 module.exports = router;
