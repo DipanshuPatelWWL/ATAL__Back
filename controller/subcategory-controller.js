@@ -58,43 +58,6 @@ exports.deletesubCategory = async (req, res) => {
 };
 
 
-
-// exports.addsubcategory = async (req, res) => {
-//   try {
-//     let subCategoryData = { ...req.body };
-
-//     //  check category exists
-//     const category = await Category.findById(subCategoryData.cat_id);
-//     if (!category) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid category ID",
-//       });
-//     }
-
-//     // handle file upload (multer)
-//     if (req.file) {
-//       subCategoryData.image = req.file.filename;
-//     }
-
-//     const subcategory = new SubCategory(subCategoryData);
-//     const savedsubcategory = await subcategory.save();
-
-//     return res.status(201).json({
-//       success: true,
-//       message: "SubCategory added successfully",
-//       data: savedsubcategory,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       success: false,
-//       message: "Error while adding subcategory",
-//       error: error.message,
-//     });
-//   }
-// };
-
-
 exports.addsubcategory = async (req, res) => {
   try {
     let subCategoryData = { ...req.body };
@@ -114,15 +77,15 @@ exports.addsubcategory = async (req, res) => {
       });
     }
 
-    // ✅ Assign cat_id reference
+    // Assign cat_id reference
     subCategoryData.cat_id = category._id;
 
-    // 📂 handle file upload (multer)
+    // handle file upload (multer)
     if (req.file) {
       subCategoryData.image = req.file.filename;
     }
 
-    // 🆕 Save Subcategory
+    // Save Subcategory
     const subcategory = new SubCategory(subCategoryData);
     const savedsubcategory = await subcategory.save();
 
@@ -155,48 +118,6 @@ exports.getsubCategories = async (req, res) => {
 };
 
 
-
-
-// Get subcategories by cat_sec
-exports.getSubcategoriesByCatSec = async (req, res) => {
-  try {
-    const { cat_sec } = req.params; // e.g. "Shop By Category"
-    const subcategories = await SubCategory.find({ cat_sec });
-
-    if (!subcategories.length) {
-      return res.status(400).json({ message: "No subcategories found" });
-    }
-    res.status(200).json({
-      success: true,
-      subcategories,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-
-// const Category = require("../model/category-model");
-
-// // Get subcategories by categoryId
-// exports.getSubcategoriesByCategoryId = async (req, res) => {
-//   try {
-//     const { cat_id } = req.params; // e.g. "68a2d2b600f5f5010fdd896c"
-
-//     const category = await Category.findById(cat_id);
-
-//     if (!category) {
-//       return res.status(404).json({ message: "Category not found" });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       subcategories: category.subCategoryNames,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-// };
 
 
 exports.getSubcategoriesByCatId = async (req, res) => {

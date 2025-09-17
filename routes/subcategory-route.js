@@ -6,7 +6,6 @@ const {
   getsubCategories,
   deletesubCategory,
   updateSubcategory,
-  getSubcategoriesByCatSec,
   getSubcategoriesByCatId,
 } = require("../controller/subcategory-controller");
 
@@ -14,7 +13,6 @@ router.post("/addsubcategory", upload.single("image"), addsubcategory);
 router.get("/getallsubcategory", getsubCategories);
 router.delete("/deletesubcategory/:id", deletesubCategory);
 router.put("/updatesubcategory/:id", upload.single("image"), updateSubcategory);
-router.get("/getBySubCategory/:cat_sec", getSubcategoriesByCatSec);
 router.get("/getSubCatByCatId/:cat_id", getSubcategoriesByCatId);
 
 
