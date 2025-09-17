@@ -31,10 +31,10 @@ const app = express();
 
 // Allowed originss
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  // "https://atal-home-updated.vercel.app",
-  // "https://atal-dashboard-updated.vercel.app",
+  // "http://localhost:5173",
+  // "http://localhost:5174",
+  "https://atal-home-updated.vercel.app",
+  "https://atal-dashboard-updated.vercel.app",
 ];
 
 // CORS middleware
@@ -60,7 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 database.connect();
 
 // Serve uploads statically
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 // Basic route
 app.get("/", (req, res) => {
