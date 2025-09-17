@@ -60,7 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 database.connect();
 
 // Serve uploads statically
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 // Basic route
 app.get("/", (req, res) => {
