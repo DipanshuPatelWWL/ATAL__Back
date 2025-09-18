@@ -1,52 +1,43 @@
 const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema(
-    {
-        product_name: { type: String },
-        product_sku: { type: String },
-        product_price: { type: Number },
-        product_sale_price: { type: Number },
-        product_description: { type: String },
-        product_status: {
-            type: Boolean,
-            default: false
-        },
+const ProductSchema = new mongoose.Schema({
+    // Category
+    cat_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    cat_sec: { type: String, required: true },
 
-        // Multiple product images
-        product_image_collection: [String],
+    // Subcategory
+    subCat_id: { type: mongoose.Schema.Types.ObjectId, ref: "SubCategory" },
+    subCategoryName: { type: String },
 
-        // Frame details
-        product_frame_material: { type: String },
-        product_frame_shape: { type: String },
-        product_frame_color: { type: String },
-        product_frame_fit: { type: String },
+    // Product info
+    product_name: { type: String, required: true },
+    product_sku: { type: String, required: true },
+    product_price: { type: Number, required: true },
+    product_sale_price: { type: Number },
+    product_description: { type: String },
+    gender: { type: String },
+    product_image_collection: [String],
 
-        gender: { type: String },
+    // Sunglasses
+    frame_material: String,
+    frame_shape: String,
+    frame_color: String,
+    frame_fit: String,
 
-        // Category support
-        cat_sec: { type: String }, // e.g. "Sunglasses"
-        cat_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Category",
-            required: true,
-        },
-        subCategoryName: { type: String }, // e.g. "Round Frame"
-        subCat_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "SubCategory",
-            required: true,
-        },
+    // Lens details
+    product_lens_title1: String,
+    product_lens_description1: String,
+    product_lens_title2: String,
+    product_lens_description2: String,
+    product_lens_image1: String,
+    product_lens_image2: String,
 
-        // Lens details
-        product_lens_title1: { type: String },
-        product_lens_description1: { type: String },
-        product_lens_image1: { type: String },
+    // Contact lens
+    contact_type: String,
+    material: String,
+    manufacturer: String,
+    water_content: String,
 
-        product_lens_title2: { type: String },
-        product_lens_description2: { type: String },
-        product_lens_image2: { type: String },
-    },
-    { timestamps: true }
-);
+}, { timestamps: true });
 
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Product", ProductSchema);
