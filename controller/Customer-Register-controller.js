@@ -87,5 +87,45 @@ const fetchCustomerById = async (req, res) => {
     }
 };
 
+const updateCustomer = async (req, res) => {
 
-module.exports = { registerCustomer, fetchCustomerById };
+    try {
+        const { id } = req.params
+        const {
+            firstName,
+            lastName,
+            dateOfBirth,
+            mobilePhone,
+            email,
+            password,
+            address,
+        } = req.body;
+
+        const updatefields = {
+            firstName,
+            lastName,
+            dateOfBirth,
+            mobilePhone,
+            email,
+            password,
+            address,
+        }
+        if (req.files?.profileImage) {
+            updatefields.profileImage = req.files.profileImage[0].path;
+        }
+        if (req.files?.prescriptionFile) {
+            updatefields.prescriptionFile = req.files.prescriptionFile[0].path;
+        }
+
+        const updatedCustomer = await Customer.findByIdAndUpdate(id, updatefields, { new: true })
+        if (!updatedCustomer) {
+            return res.status(400).json({ success: false, message: "Customer Not found", data: updatedCustomer })
+        }
+        res.status(200).json({ success: true, message: "Customer Updated Successfully" })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Customer Not updated" })
+    }
+}
+
+
+module.exports = { registerCustomer, fetchCustomerById, updateCustomer };
