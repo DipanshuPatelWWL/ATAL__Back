@@ -23,6 +23,7 @@ const disclaimerRoute = require("./routes/disclaimer-routes");
 const eyeServicesRoute = require("./routes/our-eye-services-routes");
 const companyRoutes = require("./routes/company-route");
 const frameShapesRoutes = require("./routes/frame-shapes-route");
+const eyeExamRoutes = require("./routes/eye-exam-route");
 const database = require("./config/config");
 const cors = require("cors");
 
@@ -30,10 +31,10 @@ const app = express();
 
 // Allowed originss
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  // "https://atal-home-updated.vercel.app",
-  // "https://atal-dashboard-updated.vercel.app",
+  // "http://localhost:5173",
+  // "http://localhost:5174",
+  "https://atal-home-updated.vercel.app",
+  "https://atal-dashboard-updated.vercel.app",
 ];
 
 // CORS middleware
@@ -90,6 +91,7 @@ app.use("/api", disclaimerRoute);
 app.use("/api", eyeServicesRoute);
 app.use("/api", companyRoutes);
 app.use("/api", frameShapesRoutes);
+app.use("/api", eyeExamRoutes);
 
 
 const PORT = process.env.PORT || 4000;

@@ -1,43 +1,71 @@
 const EyeExam = require("../model/eye-exam-model")
-
+const mongoose = require("mongoose");
 
 const addEyeExam = async (req, res) => {
     try {
-        const { appointment_date,
-            exam_name,
-            doctor_name,
-            first_name,
-            last_name,
+        console.log("Incoming request body:", req.body); // DEBUG
+
+        const {
+            custId,
+            appointmentDate,
+            examType,
+            doctorName,
+            firstName,
+            lastName,
             gender,
-            dateOfBirth,
+            dob,
             phone,
             email,
-        } = req.body
+            weekday,
+        } = req.body;
 
+        // Basic validation
+        if (!appointmentDate || !examType || !doctorName || !firstName || !gender || !phone) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields: appointmentDate, examType, doctorName, firstName, gender, phone",
+            });
+        }
+
+        // Validate custId if provided
+        if (custId && !mongoose.Types.ObjectId.isValid(custId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid custId provided",
+            });
+        }
+
+        // Create new EyeExam
         const newBookExam = new EyeExam({
-            appointment_date,
-            exam_name,
-            doctor_name,
-            first_name,
-            last_name,
+            custId,
+            appointmentDate,
+            examType,
+            doctorName,
+            firstName,
+            lastName,
             gender,
-            dateOfBirth,
+            dob,
             phone,
-            email
-        })
+            email,
+            weekday,
+        });
 
-        await newBookExam.save()
+        await newBookExam.save();
+
         res.status(200).json({
             success: true,
             message: "Eye Exam booked successfully",
-            data: newBookExam
-        })
+            data: newBookExam,
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Eye Exam not conducted" })
+        console.error("Error in addEyeExam:", error); // DEBUG
+        res.status(500).json({
+            success: false,
+            message: "Eye Exam not conducted",
+            error: error.message, // Include actual Mongoose error for debugging
+        });
     }
-}
-
-
+};
 
 //get API
 const getEyeExam = async (req, res) => {
@@ -55,8 +83,6 @@ const getEyeExam = async (req, res) => {
         })
     }
 }
-
-
 
 module.exports = {
     addEyeExam,
