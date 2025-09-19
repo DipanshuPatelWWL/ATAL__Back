@@ -7,7 +7,7 @@ const CustomerSchema = new mongoose.Schema(
         dateOfBirth: { type: Date, required: true },
         mobilePhone: { type: String, required: true, unique: true },
         smsOptIn: { type: Boolean, default: false },
-
+        profileImage: { type: String },
         email: { type: String, required: true, unique: true, lowercase: true },
         password: { type: String, required: true },
         twoFactorAuth: { type: String, enum: ["Email", "SMS"], default: "Email" },
