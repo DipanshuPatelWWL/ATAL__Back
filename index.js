@@ -24,8 +24,10 @@ const eyeServicesRoute = require("./routes/our-eye-services-routes");
 const companyRoutes = require("./routes/company-route");
 const frameShapesRoutes = require("./routes/frame-shapes-route");
 const eyeExamRoutes = require("./routes/eye-exam-route");
+const adminRoutes = require("./routes/admin-routes")
 const database = require("./config/config");
 const cors = require("cors");
+
 
 const app = express();
 
@@ -92,6 +94,8 @@ app.use("/api", eyeServicesRoute);
 app.use("/api", companyRoutes);
 app.use("/api", frameShapesRoutes);
 app.use("/api", eyeExamRoutes);
+app.use("/api", adminRoutes);
+
 
 
 const PORT = process.env.PORT || 4000;
