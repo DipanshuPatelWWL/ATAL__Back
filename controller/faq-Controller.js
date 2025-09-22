@@ -90,3 +90,26 @@ exports.updatefaq = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+exports.getPagination = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const data = await FAQ.find().skip(skip).limit(limit);
+    const total = await FAQ.countDocuments();
+
+    res.json({
+      page,
+      totalPages: Math.ceil(total / limit),
+      data, // this is your FAQ list
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};

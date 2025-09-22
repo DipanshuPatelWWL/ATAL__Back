@@ -110,11 +110,17 @@ const updateCustomer = async (req, res) => {
             password,
             address,
         }
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updatefields.password = hashedPassword;
+        }
+
         if (req.files?.profileImage) {
-            updatefields.profileImage = req.files.profileImage[0].path;
+            updatefields.profileImage = req.files.profileImage[0].filename;
         }
         if (req.files?.prescriptionFile) {
-            updatefields.prescriptionFile = req.files.prescriptionFile[0].path;
+            updatefields.prescriptionFile = req.files.prescriptionFile[0].filename;
         }
 
         const updatedCustomer = await Customer.findByIdAndUpdate(id, updatefields, { new: true })
