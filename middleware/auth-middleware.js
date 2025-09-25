@@ -90,6 +90,7 @@ const requireRole = (roles) => {
 
 const authMiddleware = (roles = []) => {
     return (req, res, next) => {
+
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -101,6 +102,7 @@ const authMiddleware = (roles = []) => {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded; // { id, role, ... }
+
 
             // Role-based access check
             if (roles.length && !roles.includes(decoded.role)) {
