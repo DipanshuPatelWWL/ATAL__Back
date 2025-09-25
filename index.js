@@ -27,6 +27,8 @@ const eyeExamRoutes = require("./routes/eye-exam-route");
 const adminRoutes = require("./routes/admin-routes");
 const orderRoutes = require("./routes/order-routes");
 const invoiceRoutes = require("./routes/invoice-routes")
+const examRoutes = require("./routes/exam-routes")
+const doctorRoutes = require("./routes/doctor-routes")
 const couponRoutes = require("./routes/coupon-code-router")
 const database = require("./config/config");
 const cors = require("cors");
@@ -102,6 +104,8 @@ app.use("/api", eyeExamRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", invoiceRoutes);
+app.use("/api", examRoutes);
+app.use("/api", doctorRoutes);
 app.use("/api", couponRoutes);
 
 
