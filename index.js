@@ -26,6 +26,7 @@ const frameShapesRoutes = require("./routes/frame-shapes-route");
 const eyeExamRoutes = require("./routes/eye-exam-route");
 const adminRoutes = require("./routes/admin-routes");
 const orderRoutes = require("./routes/order-routes");
+const invoiceRoutes = require("./routes/invoice-routes")
 const database = require("./config/config");
 const cors = require("cors");
 
@@ -97,6 +98,7 @@ app.use("/api", frameShapesRoutes);
 app.use("/api", eyeExamRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", orderRoutes);
+app.use("/api", invoiceRoutes);
 
 
 
