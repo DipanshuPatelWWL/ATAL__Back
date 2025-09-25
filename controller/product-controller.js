@@ -7,7 +7,14 @@ const mongoose = require("mongoose");
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id);
+    // const product = await Product.findById({ id: id, productStatus: "Approved" });
+    const product = await Product.findOne({
+      _id: id,
+      $or: [
+        { productStatus: "Approved" },
+        { productStatus: { $exists: false } } // handles case when productStatus key doesn't exist
+      ]
+    });
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
@@ -27,6 +34,11 @@ const getProdcutByCategoryname = async (req, res) => {
     const products = await Product.find({
       cat_sec: { $regex: `^${cat_sec}$`, $options: "i" },
       subCategoryName: { $regex: `^${subCategoryName}$`, $options: "i" },
+      // productStatus: "Approved"
+      $or: [
+        { productStatus: "Approved" },
+        { productStatus: { $exists: false } }
+      ]
     });
 
     res.json(products);
@@ -36,18 +48,69 @@ const getProdcutByCategoryname = async (req, res) => {
 };
 
 // Add product
+// const addProduct = async (req, res) => {
+//   try {
+//     let productData = { ...req.body };
+
+//     // 🔎 Find Category
+//     const category = await Category.findOne({ categoryName: productData.cat_sec });
+//     if (!category) {
+//       return res.status(400).json({ success: false, message: `Category '${productData.cat_sec}' not found` });
+//     }
+//     productData.cat_id = category._id;
+
+//     // 🔎 Handle SubCategory
+//     if (productData.subCategoryName) {
+//       let subCategory = await SubCategory.findOne({
+//         subCategoryName: productData.subCategoryName.trim(),
+//         cat_id: category._id,
+//       });
+//       if (!subCategory) {
+//         subCategory = new SubCategory({
+//           subCategoryName: productData.subCategoryName.trim(),
+//           cat_id: category._id,
+//         });
+//         await subCategory.save();
+//       }
+//       productData.subCat_id = subCategory._id;
+//     }
+
+//     // Handle file uploads (multer fields)
+//     if (req.files) {
+//       if (req.files.product_image_collection) {
+//         productData.product_image_collection = req.files.product_image_collection.map((file) => file.filename);
+//       }
+//       if (req.files.product_lens_image1?.[0]) {
+//         productData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+//       }
+//       if (req.files.product_lens_image2?.[0]) {
+//         productData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+//       }
+//     }
+
+//     const product = new Product(productData);
+//     const savedProduct = await product.save();
+
+//     return res.status(201).json({ success: true, message: "Product added successfully", data: savedProduct });
+//   } catch (error) {
+//     return res.status(500).json({ success: false, message: "Error while adding product", error: error.message });
+//   }
+// };
+
+
+
 const addProduct = async (req, res) => {
   try {
-    let productData = { ...req.body };
+    const productData = { ...req.body };
 
-    // 🔎 Find Category
+    // Find Category
     const category = await Category.findOne({ categoryName: productData.cat_sec });
     if (!category) {
       return res.status(400).json({ success: false, message: `Category '${productData.cat_sec}' not found` });
     }
     productData.cat_id = category._id;
 
-    // 🔎 Handle SubCategory
+    // Handle SubCategory
     if (productData.subCategoryName) {
       let subCategory = await SubCategory.findOne({
         subCategoryName: productData.subCategoryName.trim(),
@@ -63,10 +126,10 @@ const addProduct = async (req, res) => {
       productData.subCat_id = subCategory._id;
     }
 
-    // Handle file uploads (multer fields)
+    // Handle file uploads
     if (req.files) {
       if (req.files.product_image_collection) {
-        productData.product_image_collection = req.files.product_image_collection.map((file) => file.filename);
+        productData.product_image_collection = req.files.product_image_collection.map(f => f.filename);
       }
       if (req.files.product_lens_image1?.[0]) {
         productData.product_lens_image1 = req.files.product_lens_image1[0].filename;
@@ -76,14 +139,40 @@ const addProduct = async (req, res) => {
       }
     }
 
+    // Role-based handling
+    const now = new Date();
+
+    if (req.user.role === "admin") {
+      productData.productStatus = "Approved";
+      productData.isSentForApproval = true;
+      productData.approvedBy = req.user.name;
+      productData.approvedDate = now;
+      productData.createdBy = req.user.name;
+      productData.createdDate = now;
+    } else if (req.user.role === "vendor") {
+      productData.vendorID = req.user.id;
+      productData.productStatus = "Pending";
+      productData.isSentForApproval = false;
+      productData.createdBy = req.user.name;
+      productData.createdDate = now;
+    } else {
+      return res.status(403).json({ success: false, message: "Unauthorized role to add product" });
+    }
+
+    // Save product
     const product = new Product(productData);
     const savedProduct = await product.save();
 
     return res.status(201).json({ success: true, message: "Product added successfully", data: savedProduct });
+
   } catch (error) {
     return res.status(500).json({ success: false, message: "Error while adding product", error: error.message });
   }
 };
+
+
+
+
 
 // Get all products (search + filter)
 const getAllProducts = async (req, res) => {
@@ -102,13 +191,150 @@ const getAllProducts = async (req, res) => {
     if (category) query.cat_sec = category;
     if (subCategory) query.subCategoryName = subCategory;
 
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    const products = await Product.find({ productStatus: "Approved" });
+    // res.status(200).json(products);
+
+    // const products = await Product.find(query).sort({ createdAt: -1 });
 
     return res.status(200).json({ success: true, count: products.length, products });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Error while fetching products", error: error.message });
   }
 };
+
+
+// Controller to fetch all products based on filter
+const getVendorProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      isSentForApproval: false,
+      productStatus: "Pending"
+    });
+
+    return res.status(200).json({
+      success: true,
+      products
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+    });
+  }
+};
+
+
+// Controller to fetch all products based on filter
+const getVendorApprovalProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      isSentForApproval: true,
+      productStatus: "Pending"
+    });
+
+    return res.status(200).json({
+      success: true,
+      products
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+    });
+  }
+};
+
+
+// Controller to send product for approval
+const sendProductForApproval = async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { isSentForApproval: true },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Product sent for approval",
+      product: updatedProduct,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send product for approval",
+    });
+  }
+};
+
+
+
+const sendApprovedProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.productId,
+      { productStatus: "Approved" }, // ✅ use the correct field name
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product approved successfully",
+      product,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating product",
+      error: err.message,
+    });
+  }
+};
+
+
+
+// PUT /products/reject/:id
+const rejectProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { productStatus: "Rejected", rejection_message: req.body.message },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    res.json({ success: true, message: "Product rejected", product });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+
+
+
+
 
 // Update product
 const updateProduct = async (req, res) => {
@@ -157,42 +383,6 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// Get products by categoryId + subCategoryId
-// const getProductsByCategoryAndSub = async (req, res) => {
-//   try {
-//     const { categoryId, subCategoryId } = req.params;
-//     const products = await Product.find({ cat_id: categoryId, subCat_id: subCategoryId });
-//     res.json(products);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-
-
-
-
-// GET /api/products/:categoryId/:subCategoryId
-// const getProductsByCategoryAndSub = async (req, res) => {
-//   try {
-//     const { categoryId, subCategoryId } = req.params;
-
-//     // Ensure valid ObjectIds
-//     if (!mongoose.isValidObjectId(categoryId) || !mongoose.isValidObjectId(subCategoryId)) {
-//       return res.status(400).json({ error: "Invalid categoryId or subCategoryId" });
-//     }
-
-//     const products = await Product.find({
-//       cat_id: new mongoose.mongo.ObjectId(categoryId),
-//       subCat_id: new mongoose.mongo.ObjectId(subCategoryId),
-//     });
-
-//     res.json(products);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
 
 
 const getProductsByCategoryAndSub = async (req, res) => {
@@ -211,6 +401,11 @@ const getProductsByCategoryAndSub = async (req, res) => {
     const products = await Product.find({
       cat_id: new mongoose.Types.ObjectId(categoryId),
       subCat_id: new mongoose.Types.ObjectId(subCategoryId),
+      // productStatus: "Approved"
+      $or: [
+        { productStatus: "Approved" },
+        { productStatus: { $exists: false } }
+      ]
     });
 
     if (!products || products.length === 0) {
@@ -245,7 +440,12 @@ const getProductBySubCatId = async (req, res) => {
     const { subCatId } = req.params;
     if (!subCatId) return res.status(400).json({ success: false, message: "SubCategory ID is required" });
 
-    const products = await Product.find({ subCat_id: subCatId })
+    const products = await Product.find({
+      subCat_id: subCatId, $or: [
+        { productStatus: "Approved" },
+        { productStatus: { $exists: false } }
+      ]
+    })
       .populate("cat_id", "categoryName")
       .populate("subCat_id", "subCategoryName");
 
@@ -269,4 +469,9 @@ module.exports = {
   getProductsByCategoryAndSub,
   getProductBySubCatId,
   searchProducts,
+  getVendorProducts,
+  getVendorApprovalProducts,
+  sendProductForApproval,
+  sendApprovedProduct,
+  rejectProduct
 };

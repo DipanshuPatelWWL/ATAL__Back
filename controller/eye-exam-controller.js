@@ -3,8 +3,6 @@ const mongoose = require("mongoose");
 
 const addEyeExam = async (req, res) => {
     try {
-        console.log("Incoming request body:", req.body); // DEBUG
-
         const {
             custId,
             appointmentDate,

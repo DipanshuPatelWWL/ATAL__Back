@@ -29,6 +29,7 @@ const orderRoutes = require("./routes/order-routes");
 const invoiceRoutes = require("./routes/invoice-routes")
 const examRoutes = require("./routes/exam-routes")
 const doctorRoutes = require("./routes/doctor-routes")
+const couponRoutes = require("./routes/coupon-code-router")
 const database = require("./config/config");
 const cors = require("cors");
 
@@ -67,6 +68,8 @@ database.connect();
 
 // Serve uploads statically
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+app.use(express.static('public'));
+
 
 // Basic route
 app.get("/", (req, res) => {
@@ -103,6 +106,7 @@ app.use("/api", orderRoutes);
 app.use("/api", invoiceRoutes);
 app.use("/api", examRoutes);
 app.use("/api", doctorRoutes);
+app.use("/api", couponRoutes);
 
 
 
