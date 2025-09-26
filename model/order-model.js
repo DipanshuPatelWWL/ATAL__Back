@@ -48,6 +48,15 @@ const orderSchema = new mongoose.Schema({
         default: "Placed",
     },
 
+    insurance: {
+    policyId: { type: mongoose.Schema.Types.ObjectId, ref: "Policy" },
+    purchasedAt: Date,
+    validTill: Date,
+    pricePaid: Number, // the insurance fee customer paid
+    status: { type: String, enum: ["Active", "Expired"], default: "Active" },
+},
+
+
     trackingNumber: String,
     deliveryDate: Date,
 }, { timestamps: true });
