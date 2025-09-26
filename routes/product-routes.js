@@ -6,19 +6,6 @@ const upload = require("../middleware/multer"); // make sure multer.js is in mid
 const { protect, allowRoles, authMiddleware } = require("../middleware/auth-middleware");
 
 
-
-// router.post(
-//   "/addProduct",
-//   upload.fields([
-//     { name: "product_image_collection", maxCount: 10 },
-//     { name: "product_lens_image1", maxCount: 1 },
-//     { name: "product_lens_image2", maxCount: 1 },
-//   ]),
-//   protect,
-//   allowRoles("admin"),
-//   productController.addProduct
-// );
-
 router.post("/addProduct",
   upload.fields([
     { name: "product_image_collection", maxCount: 10 },

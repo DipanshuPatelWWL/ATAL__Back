@@ -50,6 +50,17 @@ const orderSchema = new mongoose.Schema({
 
     trackingNumber: String,
     deliveryDate: Date,
+
+    trackingHistory: [
+        {
+            status: {
+                type: String,
+                enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"],
+            },
+            message: String,
+            updatedAt: { type: Date, default: Date.now },
+        },
+    ],
 }, { timestamps: true });
 
 module.exports = mongoose.model("Order", orderSchema);

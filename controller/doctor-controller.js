@@ -4,44 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 
-// // Create Doctor
-// exports.createDoctor = async (req, res) => {
-//     try {
-//         const { doctor_name, specialization, exams, schedule, exam_section } = req.body;
-
-//         if (!doctor_name || !specialization || !schedule) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Please fill all the required details",
-//             });
-//         }
-
-//         let examIds = [];
-//         if (Array.isArray(exams)) {
-//             examIds = exams
-//                 .filter(e => mongoose.isValidObjectId(e))   // only keep valid ids
-//                 .map(e => new mongoose.Types.ObjectId(e));
-//         }
-//         const image = req.file ? req.file.filename : null;
-
-//         const doctor = new Doctor({
-//             doctor_name,
-//             specialization,
-//             image,
-//             exams: examIds,
-//             schedule,
-//             exam_section
-//         });
-
-//         await doctor.save();
-
-//         res.json({ success: true, data: doctor });
-//     } catch (err) {
-//         res.status(500).json({ success: false, message: err.message });
-//     }
-// };
-
-
 // Create Doctor
 exports.createDoctor = async (req, res) => {
     try {
@@ -112,15 +74,7 @@ exports.getDoctors = async (req, res) => {
     }
 };
 
-// Update Doctor
-// exports.updateDoctor = async (req, res) => {
-//     try {
-//         const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//         res.json({ success: true, data: doctor });
-//     } catch (err) {
-//         res.status(500).json({ success: false, message: err.message });
-//     }
-// };
+
 
 
 
