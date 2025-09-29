@@ -161,3 +161,20 @@ exports.trackOrderByTrackingNumber = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+
+
+exports.getAllOrders = async (req, res) => {
+    try {
+        const orders = await Order.find()
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ success: false, message: "No orders found" });
+        }
+
+        res.json({ success: true, orders });
+    } catch (err) {
+        console.error("Get Orders Error:", err);
+        res.status(500).json({ success: false, message: "Failed to fetch orders" });
+    }
+};
