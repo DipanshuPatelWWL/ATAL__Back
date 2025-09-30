@@ -27,7 +27,10 @@ const eyeExamRoutes = require("./routes/eye-exam-route");
 const adminRoutes = require("./routes/admin-routes");
 const orderRoutes = require("./routes/order-routes");
 const invoiceRoutes = require("./routes/invoice-routes")
-const couponRoutes = require("./routes/coupon-code-router")
+const examRoutes = require("./routes/exam-routes")
+const doctorRoutes = require("./routes/doctor-routes")
+const couponRoutes = require("./routes/coupon-code-router");
+const insurancePolicy = require("./routes/insurancePolicyRoutes");
 const database = require("./config/config");
 const cors = require("cors");
 
@@ -36,10 +39,10 @@ const app = express();
 
 // Allowed originss
 const allowedOrigins = [
-  // "http://localhost:5173",
-  // "http://localhost:5174",
-  "https://atal-home-updated.vercel.app",
-  "https://atal-dashboard-updated.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  // "https://atal-home-updated.vercel.app",
+  // "https://atal-dashboard-updated.vercel.app",
 ];
 
 // CORS middleware
@@ -102,7 +105,10 @@ app.use("/api", eyeExamRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", invoiceRoutes);
+app.use("/api", examRoutes);
+app.use("/api", doctorRoutes);
 app.use("/api", couponRoutes);
+app.use("/api", insurancePolicy)
 
 
 

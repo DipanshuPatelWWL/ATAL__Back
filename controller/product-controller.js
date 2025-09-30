@@ -47,56 +47,6 @@ const getProdcutByCategoryname = async (req, res) => {
   }
 };
 
-// Add product
-// const addProduct = async (req, res) => {
-//   try {
-//     let productData = { ...req.body };
-
-//     // 🔎 Find Category
-//     const category = await Category.findOne({ categoryName: productData.cat_sec });
-//     if (!category) {
-//       return res.status(400).json({ success: false, message: `Category '${productData.cat_sec}' not found` });
-//     }
-//     productData.cat_id = category._id;
-
-//     // 🔎 Handle SubCategory
-//     if (productData.subCategoryName) {
-//       let subCategory = await SubCategory.findOne({
-//         subCategoryName: productData.subCategoryName.trim(),
-//         cat_id: category._id,
-//       });
-//       if (!subCategory) {
-//         subCategory = new SubCategory({
-//           subCategoryName: productData.subCategoryName.trim(),
-//           cat_id: category._id,
-//         });
-//         await subCategory.save();
-//       }
-//       productData.subCat_id = subCategory._id;
-//     }
-
-//     // Handle file uploads (multer fields)
-//     if (req.files) {
-//       if (req.files.product_image_collection) {
-//         productData.product_image_collection = req.files.product_image_collection.map((file) => file.filename);
-//       }
-//       if (req.files.product_lens_image1?.[0]) {
-//         productData.product_lens_image1 = req.files.product_lens_image1[0].filename;
-//       }
-//       if (req.files.product_lens_image2?.[0]) {
-//         productData.product_lens_image2 = req.files.product_lens_image2[0].filename;
-//       }
-//     }
-
-//     const product = new Product(productData);
-//     const savedProduct = await product.save();
-
-//     return res.status(201).json({ success: true, message: "Product added successfully", data: savedProduct });
-//   } catch (error) {
-//     return res.status(500).json({ success: false, message: "Error while adding product", error: error.message });
-//   }
-// };
-
 
 
 const addProduct = async (req, res) => {
@@ -316,7 +266,7 @@ const sendApprovedProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.productId,
-      { productStatus: "Approved" }, // use the correct field name
+      { productStatus: "Approved" }, //  use the correct field name
       { new: true }
     );
 

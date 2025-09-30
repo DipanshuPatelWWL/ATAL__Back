@@ -50,6 +50,31 @@ exports.login = async (req, res) => {
 };
 
 // Login with auto-generated password (same logic but kept separate for clarity)
+// exports.loginNew = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+
+//         const user = await User.findOne({ email });
+//         if (!user) return res.status(400).json({ message: "User not found" });
+
+//         const isMatch = await bcrypt.compare(password, user.password);
+//         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+
+//         const token = jwt.sign(
+//             { id: user._id, role: user.role },
+//             process.env.JWT_SECRET,
+//             { expiresIn: "1d" }
+//         );
+
+//         res.json({ message: "Login successful", token, user });
+//     } catch (error) {
+//         res.status(500).json({ message: "Login error", error: error.message });
+//     }
+// };
+
+
+
+
 exports.loginNew = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -60,11 +85,23 @@ exports.loginNew = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
-        );
+        // Create JWT payload
+        const payload = {
+            id: user._id,
+            role: user.role, // "company" | "vendor" | "admin"
+        };
+
+        // Add role-specific data
+        if (user.role === "company") {
+            payload.companyId = user._id; // or user.companyId if separate
+            payload.companyName = user.companyName;
+        } else if (user.role === "vendor") {
+            payload.vendorId = user._id;
+            payload.vendorName = user.vendorName;
+        }
+
+        // Sign JWT
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
 
         res.json({ message: "Login successful", token, user });
     } catch (error) {
