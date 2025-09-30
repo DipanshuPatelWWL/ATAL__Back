@@ -14,6 +14,7 @@ router.get("/order/track/:trackingNumber", orderController.trackOrderByTrackingN
 router.put("/order/updateOrderStatus/:orderId/status", orderController.updateOrderStatus);
 
 router.get("/order/getOrderTracking/:orderId/tracking", orderController.getOrderTracking);
+router.get("/allOrder", orderController.getAllOrders);
 
 
 module.exports = router;
