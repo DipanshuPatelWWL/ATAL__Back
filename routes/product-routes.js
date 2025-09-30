@@ -41,6 +41,18 @@ router.put(
   productController.updateProduct
 );
 
+router.put(
+  "/updateVendorProduct/:id",
+  upload.fields([
+    { name: "product_image_collection", maxCount: 10 },
+    { name: "product_lens_image1", maxCount: 1 },
+    { name: "product_lens_image2", maxCount: 1 },
+  ]),
+  protect,
+  allowRoles("vendor"),
+  productController.updateVendorProduct
+);
+
 router.delete(
   "/deleteProduct/:id",
   protect,

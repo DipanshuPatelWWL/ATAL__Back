@@ -124,12 +124,12 @@ const addProduct = async (req, res) => {
 
 
 
-// Get all products (search + filter)
 const getAllProducts = async (req, res) => {
   try {
     const { search, category, subCategory } = req.query;
     let query = {};
 
+    // Search filter
     if (search) {
       query.$or = [
         { product_name: { $regex: search, $options: "i" } },
@@ -138,28 +138,59 @@ const getAllProducts = async (req, res) => {
       ];
     }
 
+    // Category filters
     if (category) query.cat_sec = category;
     if (subCategory) query.subCategoryName = subCategory;
 
-    const products = await Product.find({ productStatus: "Approved" });
-    // res.status(200).json(products);
+    // Status filter (merge with query)
+    query.$or = query.$or
+      ? [...query.$or, { productStatus: "Approved" }, { productStatus: { $exists: false } }]
+      : [{ productStatus: "Approved" }, { productStatus: { $exists: false } }];
 
-    // const products = await Product.find(query).sort({ createdAt: -1 });
+    // Final query
+    const products = await Product.find(query).sort({ createdAt: -1 });
 
-    return res.status(200).json({ success: true, count: products.length, products });
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error while fetching products", error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Error while fetching products",
+      error: error.message,
+    });
   }
 };
 
 
+
 // Controller to fetch all products based on filter
+// const getVendorProducts = async (req, res) => {
+//   try {
+//     const products = await Product.find({
+//       // isSentForApproval: false,
+//       productStatus: ["Pending", "Rejected"]
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       products
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch products",
+//     });
+//   }
+// };
 const getVendorProducts = async (req, res) => {
   try {
     const products = await Product.find({
-      isSentForApproval: false,
-      productStatus: "Pending"
-    });
+      productStatus: { $in: ["Pending", "Rejected"] }
+    }).sort({ createdAt: -1 }); // latest first
 
     return res.status(200).json({
       success: true,
@@ -262,24 +293,20 @@ const sendApprovedProduct = async (req, res) => {
 
 
 
-// PUT /products/reject/:id
 const rejectProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { productStatus: "Rejected", rejection_message: req.body.message },
-      { new: true }
-    );
-
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
+      req.params.id, {
+      productStatus: "Rejected",
+      rejectionReason: req.body.message
+    },
+      { new: true });
+    if (!product) { return res.status(404).json({ success: false, message: "Product not found" }); }
     res.json({ success: true, message: "Product rejected", product });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
   }
+  catch (error) { res.status(500).json({ success: false, message: "Server error", error }); }
 };
+
 
 
 
@@ -319,6 +346,56 @@ const updateProduct = async (req, res) => {
     return res.status(500).json({ success: false, message: "Error while updating product", error: error.message });
   }
 };
+
+
+// Update vendor product on condition
+const updateVendorProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let updateData = { ...req.body };
+
+    // Fetch existing product
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) return res.status(404).json({ success: false, message: "Product not found" });
+
+    // If product is sent for approval, allow only price and sale_price updates
+    if (existingProduct.isSentForApproval) {
+      const allowedFields = ["price", "sale_price"];
+      updateData = Object.keys(updateData)
+        .filter(key => allowedFields.includes(key))
+        .reduce((obj, key) => {
+          obj[key] = req.body[key];
+          return obj;
+        }, {});
+    } else {
+      // Handle images only if product is NOT sent for approval
+      let finalImages = [];
+      if (req.body.existingImages) {
+        finalImages = typeof req.body.existingImages === "string"
+          ? JSON.parse(req.body.existingImages)
+          : req.body.existingImages;
+      }
+      if (req.files?.product_image_collection) {
+        finalImages = [...finalImages, ...req.files.product_image_collection.map(f => f.filename)];
+      }
+      updateData.product_image_collection = finalImages;
+
+      if (req.files?.product_lens_image1?.[0]) {
+        updateData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+      }
+      if (req.files?.product_lens_image2?.[0]) {
+        updateData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+      }
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    return res.status(200).json({ success: true, message: "Product updated successfully", data: updatedProduct });
+
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error while updating product", error: error.message });
+  }
+};
+
 
 //  Delete product
 const deleteProduct = async (req, res) => {
@@ -423,5 +500,6 @@ module.exports = {
   getVendorApprovalProducts,
   sendProductForApproval,
   sendApprovedProduct,
-  rejectProduct
+  rejectProduct,
+  updateVendorProduct
 };
