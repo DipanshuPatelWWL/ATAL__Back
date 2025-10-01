@@ -45,6 +45,9 @@ exports.updateProfile = async (req, res) => {
       }
     }
 
+    if (req.files?.profileImage) {
+      updateData.profileImage = req.files.profileImage[0].filename;
+    }
     const updatedVendor = await Vendor.findByIdAndUpdate(
       vendor._id,
       { $set: updateData },

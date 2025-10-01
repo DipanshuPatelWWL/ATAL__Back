@@ -24,6 +24,10 @@ const ProductSchema = new mongoose.Schema({
     gender: { type: String },
     product_image_collection: [String],
 
+
+    stockAvailability: { type: Number, default: 0, min: 0 },
+
+
     // Sunglasses
     frame_material: String,
     frame_shape: String,

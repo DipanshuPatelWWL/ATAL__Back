@@ -17,6 +17,7 @@ router.put(
   "/companyProfile/:id",
   authMiddleware(),
   upload.fields([
+    { name: "profileImage", maxCount: 1 },
     { name: "signedAgreement", maxCount: 1 },
     { name: "licenseProof", maxCount: 1 },
     { name: "voidCheque", maxCount: 1 }
