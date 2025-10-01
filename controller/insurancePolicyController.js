@@ -55,7 +55,7 @@ exports.updatePolicy = async (req, res) => {
 // Admin: Deactivate policy
 exports.deletePolicy = async (req, res) => {
   try {
-    await InsurancePolicy.findByIdAndUpdate(req.params.id, { active: false }); // ✅ use "active"
+    await InsurancePolicy.findByIdAndUpdate(req.params.id, { active: false });
     res.json({ success: true, message: "Policy deactivated" });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });

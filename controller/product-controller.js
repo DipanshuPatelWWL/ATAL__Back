@@ -97,13 +97,13 @@ const addProduct = async (req, res) => {
       productData.isSentForApproval = true;
       productData.approvedBy = req.user.name;
       productData.approvedDate = now;
-      productData.createdBy = req.user.name;
+      productData.createdBy = req.user.role;
       productData.createdDate = now;
     } else if (req.user.role === "vendor") {
       productData.vendorID = req.user.id;
       productData.productStatus = "Pending";
       productData.isSentForApproval = false;
-      productData.createdBy = req.user.name;
+      productData.createdBy = req.user.role;
       productData.createdDate = now;
     } else {
       return res.status(403).json({ success: false, message: "Unauthorized role to add product" });
@@ -165,27 +165,6 @@ const getAllProducts = async (req, res) => {
 };
 
 
-
-// Controller to fetch all products based on filter
-// const getVendorProducts = async (req, res) => {
-//   try {
-//     const products = await Product.find({
-//       // isSentForApproval: false,
-//       productStatus: ["Pending", "Rejected"]
-//     });
-
-//     return res.status(200).json({
-//       success: true,
-//       products
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch products",
-//     });
-//   }
-// };
 const getVendorProducts = async (req, res) => {
   try {
     const products = await Product.find({
