@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
-
+    email: { type: String, required: true },
     cartItems: [
         {
             productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
@@ -57,6 +57,8 @@ const orderSchema = new mongoose.Schema({
         pricePaid: Number, // the insurance fee customer paid
         status: { type: String, enum: ["Active", "Expired"], default: "Active" },
     },
+    product_size: [String],
+    product_color: [String],
 
     trackingNumber: String,
     deliveryDate: Date,
