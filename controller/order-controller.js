@@ -2,6 +2,9 @@ const Order = require("../model/order-model");
 const transporter = require("../utils/mailer");
 const paymentTemplate = require("../utils/paymentTemplate");
 const generateTrackingNumber = require("../utils/generateTrackingNumber");
+const productModel = require("../model/product-model");
+
+
 
 exports.createOrder = async (req, res) => {
     try {
@@ -16,10 +19,22 @@ exports.createOrder = async (req, res) => {
         // Generate unique tracking number
         const trackingNumber = generateTrackingNumber();
 
+        // Enrich cart items with createdBy (vendor/admin)
+        const cartItemsWithCreator = await Promise.all(
+            req.body.cartItems.map(async (item) => {
+                const product = await productModel.findById(item.productId);
+                return {
+                    ...item,
+                    createdBy: product?.createdBy || "admin", // vendor or admin
+                };
+            })
+        );
+
         // Build order object
         const orderData = {
             ...req.body,
-            trackingNumber,  // assign tracking number
+            cartItems: cartItemsWithCreator,
+            trackingNumber,
             trackingHistory: [
                 {
                     status: "Placed",
@@ -28,7 +43,7 @@ exports.createOrder = async (req, res) => {
             ],
         };
 
-        // If customer selected an insurance policy (from checkout)
+        // Handle insurance
         if (req.body.insurancePolicyId) {
             const policy = await InsurancePolicy.findById(req.body.insurancePolicyId);
             if (!policy) {
@@ -46,7 +61,7 @@ exports.createOrder = async (req, res) => {
                 status: "Active",
             };
 
-            // Add insurance price to order total (remove if frontend already included)
+            // Add insurance price to order total
             orderData.total = (orderData.total || 0) + policy.price;
         }
 
@@ -79,6 +94,9 @@ exports.createOrder = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+
+
 
 exports.getOrderById = async (req, res) => {
     try {
@@ -187,18 +205,55 @@ exports.trackOrderByTrackingNumber = async (req, res) => {
 };
 
 
-
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find()
+        // Fetch all orders
+        const orders = await Order.find();
 
-        if (!orders || orders.length === 0) {
-            return res.status(404).json({ success: false, message: "No orders found" });
+        // Filter orders where at least one cartItem is created by a vendor
+        const adminOrders = orders.filter(order =>
+            order.cartItems.some(item => item.createdBy && item.createdBy == "admin")
+        );
+
+        if (!adminOrders.length) {
+            return res
+                .status(400)
+                .json({ success: false, message: "No admin orders found" });
         }
 
-        res.json({ success: true, orders });
+        res.json({ success: true, orders: adminOrders });
     } catch (err) {
         console.error("Get Orders Error:", err);
-        res.status(500).json({ success: false, message: "Failed to fetch orders" });
+        res
+            .status(500)
+            .json({ success: false, message: "Failed to fetch admin orders" });
+    }
+};
+
+
+
+
+exports.getAllVendorOrders = async (req, res) => {
+    try {
+        // Fetch all orders
+        const orders = await Order.find();
+
+        // Filter orders where at least one cartItem is created by a vendor
+        const vendorOrders = orders.filter(order =>
+            order.cartItems.some(item => item.createdBy && item.createdBy !== "admin")
+        );
+
+        if (!vendorOrders.length) {
+            return res
+                .status(404)
+                .json({ success: false, message: "No vendor orders found" });
+        }
+
+        res.json({ success: true, orders: vendorOrders });
+    } catch (err) {
+        console.error("Get Orders Error:", err);
+        res
+            .status(500)
+            .json({ success: false, message: "Failed to fetch vendor orders" });
     }
 };

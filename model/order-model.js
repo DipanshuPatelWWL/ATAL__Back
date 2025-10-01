@@ -11,6 +11,7 @@ const orderSchema = new mongoose.Schema({
             image: String,
             price: Number,
             quantity: Number,
+            createdBy: { type: String },
         },
     ],
 
@@ -45,7 +46,7 @@ const orderSchema = new mongoose.Schema({
 
     orderStatus: {
         type: String,
-        enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"],
+        enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled", "Returned", "Failed"],
         default: "Placed",
     },
 
