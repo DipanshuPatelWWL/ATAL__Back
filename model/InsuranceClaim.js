@@ -1,16 +1,3 @@
-// const mongoose = require("mongoose");
-
-// const insuranceClaimSchema = new mongoose.Schema({
-//   customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
-//   policy: { type: mongoose.Schema.Types.ObjectId, ref: "InsurancePolicy", required: true },
-//   purchaseId: { type: String, required: true },
-//   claimAmount: { type: String },
-//   status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
-// }, { timestamps: true });
-
-// module.exports = mongoose.model("InsuranceClaim", insuranceClaimSchema);
-
-
 const mongoose = require("mongoose");
 
 const claimSchema = new mongoose.Schema({
