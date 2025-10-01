@@ -85,6 +85,10 @@ exports.updateCompProfile = async (req, res) => {
       delete updateData.companyPassword;
     }
 
+    if (req.files?.profileImage) {
+      updateData.profileImage = req.files.profileImage[0].filename;
+    }
+
     // Handle uploaded files (multer.fields case → arrays)
     if (req.files) {
       if (req.files.licenseProof?.[0]) {
