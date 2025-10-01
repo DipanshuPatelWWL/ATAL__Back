@@ -11,7 +11,13 @@ const ProductSchema = new mongoose.Schema({
 
     // Product info
     product_name: { type: String, required: true },
-    product_sku: { type: String, required: true },
+    product_size: {
+        type: [String],
+    },
+    product_color: {
+        type: [String],
+        default: []
+    },
     product_price: { type: Number, required: true },
     product_sale_price: { type: Number },
     product_description: { type: String },
