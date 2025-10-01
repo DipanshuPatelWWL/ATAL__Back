@@ -15,6 +15,7 @@ router.put(
     "/vendorProfile",
     authMiddleware(),
     upload.fields([
+        { name: "profileImage", maxCount: 1 },
         { name: "certifications", maxCount: 5 },
         { name: "certificates", maxCount: 5 }
     ]),

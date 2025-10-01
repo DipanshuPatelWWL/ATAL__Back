@@ -501,5 +501,5 @@ module.exports = {
   sendProductForApproval,
   sendApprovedProduct,
   rejectProduct,
-  updateVendorProduct
+  updateVendorProduct,
 };

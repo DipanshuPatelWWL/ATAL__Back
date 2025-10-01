@@ -7,9 +7,11 @@ const vendorSchema = new mongoose.Schema(
       enum: ["supplier", "lab", "brand"],
       required: true,
     },
+    profileImage: { type: String },
     companyName: { type: String },
     operatingName: String,
     businessNumber: String,
+
 
     userId: { type: String },
     vendorPassword: String,

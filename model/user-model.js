@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    profileImage: { type: String },
     password: { type: String, required: true }, // will be hashed
     role: { type: String, enum: ["admin", "vendor", "company"], required: true },
 
