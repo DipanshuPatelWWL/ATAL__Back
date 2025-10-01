@@ -168,8 +168,9 @@ const getAllProducts = async (req, res) => {
 const getVendorProducts = async (req, res) => {
   try {
     const products = await Product.find({
-      productStatus: { $in: ["Pending", "Rejected"] }
-    }).sort({ createdAt: -1 }); // latest first
+      productStatus: { $in: ["Approved", "Pending", "Rejected"] },
+      createdBy: "vendor"
+    }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -183,6 +184,8 @@ const getVendorProducts = async (req, res) => {
     });
   }
 };
+
+
 
 
 // Controller to fetch all products based on filter
