@@ -1,19 +1,30 @@
-// Update Profile (Vendor/Company)
 const User = require("../model/user-model");
 
 exports.updateProfile = async (req, res) => {
-    try {
-        const { id } = req.user;
-        const updates = req.body;
+  try {
+    const { id } = req.user; // from auth middleware
+    const { name, email, password } = req.body;
+    const photo = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-        const user = await User.findByIdAndUpdate(
-            id,
-            { profile: updates },
-            { new: true }
-        );
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-        res.json({ message: "Profile updated", user });
-    } catch (error) {
-        res.status(500).json({ message: "Update error", error: error.message });
+    user.name = name || user.name;
+    user.email = email || user.email;
+
+    if (password && password.trim() !== "") {
+      user.password = password; // raw password sent from frontend
+      // this will trigger pre-save hook and hash it
     }
+
+    if (photo) user.photo = photo;
+
+    await user.save(); // triggers the pre-save hook
+
+    res.json({ message: "Profile updated successfully", user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
+
