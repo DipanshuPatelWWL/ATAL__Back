@@ -17,10 +17,8 @@ exports.createOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: "Email is required" });
         }
 
-        //  Generate tracking number
+        // Generate tracking number
         const trackingNumber = generateTrackingNumber();
-
-        //  Map cart items and preserve all details
         const cartItemsWithDetails = await Promise.all(
             cartItems.map(async (item) => {
                 const product = await productModel.findById(item.id || item.productId);
@@ -47,7 +45,7 @@ exports.createOrder = async (req, res) => {
             })
         );
 
-        //  Prepare order data
+
         const orderData = {
             ...req.body,
             userId: req.user?.id || req.body.userId,
@@ -57,11 +55,11 @@ exports.createOrder = async (req, res) => {
             trackingHistory: [{ status: "Placed", message: "Order placed successfully" }],
         };
 
-        //  Save order
+        // Save order
         const order = new Order(orderData);
         await order.save();
 
-        //  Send confirmation email (non-blocking)
+        // Send confirmation email (non-blocking)
         try {
             await transporter.sendMail({
                 from: `"ATAL OPTICALS" <${process.env.EMAIL_USER}>`,
@@ -241,5 +239,26 @@ exports.getAllVendorOrders = async (req, res) => {
         res
             .status(500)
             .json({ success: false, message: "Failed to fetch vendor orders" });
+    }
+};
+
+
+
+// Get Order History by User
+exports.getOrderHistory = async (req, res) => {
+
+    try {
+        const userId = req.params.userId;
+
+        const orders = await Order.find({ userId })
+            .sort({ createdAt: -1 }); // latest first
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ success: false, message: "No orders found" });
+        }
+
+        res.json({ success: true, orders });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

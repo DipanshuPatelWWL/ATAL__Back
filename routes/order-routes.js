@@ -16,6 +16,7 @@ router.put("/order/updateOrderStatus/:orderId/status", orderController.updateOrd
 router.get("/order/getOrderTracking/:orderId/tracking", orderController.getOrderTracking);
 router.get("/allOrder", orderController.getAllOrders);
 router.get("/vendor-orders", orderController.getAllVendorOrders);
+router.get("/order/history/:userId", orderController.getOrderHistory);
 
 
 module.exports = router;

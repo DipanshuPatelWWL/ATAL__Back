@@ -55,8 +55,8 @@ router.put(
 
 router.delete(
   "/deleteProduct/:id",
-  protect,
-  allowRoles("admin"),
+  authMiddleware(),
+  allowRoles("vendor", "admin"),
   productController.deleteProduct
 );
 
