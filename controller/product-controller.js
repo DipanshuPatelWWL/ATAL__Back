@@ -51,7 +51,7 @@ const addProduct = async (req, res) => {
   try {
     const productData = { ...req.body };
 
-    // ✅ Ensure stock field exists
+    //  Ensure stock field exists
     if (productData.stock === undefined) {
       productData.stock = 0;
     }
@@ -285,7 +285,7 @@ const updateProduct = async (req, res) => {
     const { id } = req.params;
     let updateData = { ...req.body };
 
-    // ✅ Ensure stock is numeric if provided
+    //  Ensure stock is numeric if provided
     if (updateData.stock !== undefined) {
       updateData.stock = Number(updateData.stock);
     }
@@ -324,7 +324,7 @@ const updateVendorProduct = async (req, res) => {
     const { id } = req.params;
     let updateData = { ...req.body };
 
-    // ✅ Ensure stock is numeric if provided
+    //  Ensure stock is numeric if provided
     if (updateData.stock !== undefined) {
       updateData.stock = Number(updateData.stock);
     }
