@@ -371,18 +371,34 @@ const updateVendorProduct = async (req, res) => {
   }
 };
 
-//  Delete product
+
+
 const deleteProduct = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deletedProduct = await Product.findByIdAndDelete(id);
-    if (!deletedProduct) return res.status(404).json({ success: false, message: "Product not found" });
+    const { id } = req.params;   // product ID from URL
+    const userId = req.user.id; // logged-in user ID
+    const userRole = req.user.role;
 
-    return res.status(200).json({ success: true, message: "Product deleted successfully" });
+    // Find product
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // Vendor can delete only their own products
+    if (userRole === "vendor" && product.vendorID.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized to delete this product" });
+    }
+
+    // Delete product
+    await Product.findByIdAndDelete(id);
+
+    res.json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error while deleting product", error: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 const getProductsByCategoryAndSub = async (req, res) => {
   try {

@@ -257,3 +257,26 @@ exports.getAllVendorOrders = async (req, res) => {
             .json({ success: false, message: "Failed to fetch vendor orders" });
     }
 };
+
+
+
+// Get Order History by User
+exports.getOrderHistory = async (req, res) => {
+    console.log(req.params);
+
+    try {
+        const userId = req.params.userId; // logged-in user ID (from auth middleware)
+
+        const orders = await Order.find({ userId })
+            .populate("products.productId", "product_name price") // optional: show product details
+            .sort({ createdAt: -1 }); // latest first
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ success: false, message: "No orders found" });
+        }
+
+        res.json({ success: true, orders });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
