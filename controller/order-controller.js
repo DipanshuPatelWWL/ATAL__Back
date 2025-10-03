@@ -262,13 +262,12 @@ exports.getAllVendorOrders = async (req, res) => {
 
 // Get Order History by User
 exports.getOrderHistory = async (req, res) => {
-    console.log(req.params);
 
     try {
-        const userId = req.params.userId; // logged-in user ID (from auth middleware)
+        const userId = req.params.userId;
 
         const orders = await Order.find({ userId })
-            .populate("products.productId", "product_name price") // optional: show product details
+            .populate("products.productId", "product_name price")
             .sort({ createdAt: -1 }); // latest first
 
         if (!orders || orders.length === 0) {
