@@ -7,7 +7,7 @@ const { updateCompProfile, getCompanyById, getAllCompany } = require("../control
 
 
 //get All company
-router.get("/getAllCOmpany", getAllCompany);
+router.get("/getAllCompany", getAllCompany);
 
 // Get single company
 router.get("/getCompanyById/:id", getCompanyById);
