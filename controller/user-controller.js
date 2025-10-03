@@ -1,5 +1,17 @@
 const User = require("../model/user-model");
 
+// Get logged-in user profile
+exports.getProfile = async (req, res) => {
+  try {
+    // req.user is set by authMiddleware
+    const user = req.user;
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 exports.updateProfile = async (req, res) => {
   try {
     const { id } = req.user; // from auth middleware
@@ -27,4 +39,3 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-

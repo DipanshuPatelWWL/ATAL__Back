@@ -1,102 +1,46 @@
-const User = require("../model/user-model")
-const bcrypt = require("bcryptjs");
+const User = require("../model/user-model");
 
-
-
-// exports.getAdminById = async (req, res) => {
-//   try {
-//     let admin = await User.findOne({ _id: req.params.id });
-//     if (!admin) return res.status(404).json({ success: false, message: "admin  not found" });
-//     res.json({ success: true, admin });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: "Error fetching admin" });
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
+// Get a single admin by ID
 exports.getAdminById = async (req, res) => {
   try {
-    let admin = await User.findById(req.params.id).select("-password"); // don’t send password
+    const { id } = req.params;
+    const admin = await User.findOne({ _id: id, role: "admin" }).select(
+      "-password"
+    );
     if (!admin) {
-      return res.status(404).json({ success: false, message: "Admin not found" });
+      return res.status(404).json({ message: "Admin not found" });
     }
-
-    res.json({
-      success: true,
-      admin: {
-        _id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role,
-        profileImage: admin.profileImage || null, //  always return profileImage
-      },
-    });
+    res.json(admin);
   } catch (err) {
-    res.status(500).json({ success: false, message: "Error fetching admin", error: err.message });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//update admin
-
+// Update admin profile
 exports.updateAdminProfile = async (req, res) => {
   try {
+    const { id } = req.params;
     const { name, email, password } = req.body;
+    const profileImage = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-    let updateData = { name, email };
+    const admin = await User.findOne({ _id: id, role: "admin" });
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-    // Hash password only if provided
+    admin.name = name || admin.name;
+    admin.email = email || admin.email;
+
     if (password && password.trim() !== "") {
-      const salt = await bcrypt.genSalt(10);
-      updateData.password = await bcrypt.hash(password, salt);
+      admin.password = password; // pre-save hook will hash it
     }
 
-    if (req.files?.profileImage) {
-      updateData.profileImage = req.files.profileImage[0].filename;
-    }
+    if (profileImage) admin.profileImage = profileImage;
 
-    const admin = await User.findByIdAndUpdate(
-      req.params.id,     // admin id from URL
-      { $set: updateData },
-      { new: true }      // return updated document
-    );
+    await admin.save();
 
-    if (!admin) {
-      return res.status(404).json({ success: false, message: "Admin not found" });
-    }
-
-    res.json({
-      success: true,
-      message: "Admin profile updated successfully",
-      admin,
-    });
-  } catch (error) {
-    console.error("Update Admin Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while updating admin",
-      error: error.message,
-    });
+    res.json({ message: "Admin profile updated successfully", admin });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
