@@ -14,7 +14,7 @@ router.post("/addProduct",
   ]),
   authMiddleware(), productController.addProduct);
 
-// 🔎 Search products (by name, category, subcategory)
+// Search products (by name, category, subcategory)
 router.get("/products/search", productController.searchProducts);
 
 router.get(

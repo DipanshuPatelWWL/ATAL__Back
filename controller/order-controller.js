@@ -3,103 +3,6 @@ const transporter = require("../utils/mailer");
 const paymentTemplate = require("../utils/paymentTemplate");
 const generateTrackingNumber = require("../utils/generateTrackingNumber");
 const productModel = require("../model/product-model");
-const InsurancePolicy = require("../model/InsurancePolicy");
-
-
-
-// exports.createOrder = async (req, res) => {
-//     try {
-//         // Basic validation
-//         if (!req.body || !req.body.userId) {
-//             return res.status(400).json({ message: "No order data provided" });
-//         }
-//         if (!req.body.email) {
-//             return res.status(400).json({ message: "Email is required" });
-//         }
-
-//         // Generate unique tracking number
-//         const trackingNumber = generateTrackingNumber();
-
-//         // Enrich cart items with createdBy (vendor/admin)
-//         const cartItemsWithCreator = await Promise.all(
-//             req.body.cartItems.map(async (item) => {
-//                 const product = await productModel.findById(item.productId);
-//                 return {
-//                     ...item,
-//                     createdBy: product?.createdBy || "admin", // vendor or admin
-//                 };
-//             })
-//         );
-
-//         // Build order object
-//         const orderData = {
-//             ...req.body,
-//             cartItems: cartItemsWithCreator,
-//             trackingNumber,
-//             trackingHistory: [
-//                 {
-//                     status: "Placed",
-//                     message: "Order placed successfully",
-//                 },
-//             ],
-//         };
-
-//         // Handle insurance
-//         if (req.body.insurancePolicyId) {
-//             const policy = await InsurancePolicy.findById(req.body.insurancePolicyId);
-//             if (!policy) {
-//                 return res.status(404).json({ success: false, message: "Selected insurance policy not found" });
-//             }
-
-//             const purchasedAt = new Date();
-//             const validTill = new Date(purchasedAt.getTime() + policy.durationDays * 24 * 60 * 60 * 1000);
-
-//             orderData.insurance = {
-//                 policyId: policy._id,
-//                 purchasedAt,
-//                 validTill,
-//                 pricePaid: policy.price,
-//                 status: "Active",
-//             };
-
-//             // Add insurance price to order total
-//             orderData.total = (orderData.total || 0) + policy.price;
-//         }
-
-//         // Create and save order
-//         const order = new Order(orderData);
-//         await order.save();
-
-//         // Send confirmation email
-//         const mailOptions = {
-//             from: `"ATAL OPTICALS" <${process.env.EMAIL_USER}>`,
-//             to: req.body.email,
-//             subject: "Your Order Confirmation",
-//             html: paymentTemplate(order),
-//         };
-
-//         try {
-//             await transporter.sendMail(mailOptions);
-//         } catch (mailErr) {
-//             console.error("Email sending failed:", mailErr.message);
-//         }
-
-//         // Return
-//         res.status(201).json({
-//             success: true,
-//             message: "Order placed successfully",
-//             order,
-//         });
-//     } catch (error) {
-//         console.error("Order creation error:", error);
-//         res.status(500).json({ success: false, message: error.message });
-//     }
-// };
-
-
-
-
-
 
 
 
@@ -108,54 +11,57 @@ exports.createOrder = async (req, res) => {
         const { email, cartItems, total } = req.body;
 
         if (!cartItems || cartItems.length === 0) {
-            return res
-                .status(400)
-                .json({ success: false, message: "Cart items are required" });
+            return res.status(400).json({ success: false, message: "Cart items are required" });
         }
         if (!email) {
-            return res
-                .status(400)
-                .json({ success: false, message: "Email is required" });
+            return res.status(400).json({ success: false, message: "Email is required" });
         }
 
-        // ✅ Generate tracking number
+        //  Generate tracking number
         const trackingNumber = generateTrackingNumber();
 
-        // ✅ Map cart items with all details
+        //  Map cart items and preserve all details
         const cartItemsWithDetails = await Promise.all(
             cartItems.map(async (item) => {
                 const product = await productModel.findById(item.id || item.productId);
+
                 return {
                     productId: item.id || item.productId,
                     name: item.name,
                     price: item.price,
                     image: item.image,
+                    quantity: item.quantity || 1,
+                    createdBy: product?.createdBy || "admin",
+
+                    // preserve selections
                     product_size: item.product_size || [],
                     product_color: item.product_color || [],
-                    insurance: item.insurance || null,
                     lens: item.lens || null,
-                    createdBy: product?.createdBy || "admin",
+                    enhancement: item.enhancement || null,
+                    thickness: item.thickness || null,
+                    tint: item.tint || null,
+
+                    // preserve policy / insurance
+                    policy: item.policy || null,
                 };
             })
         );
 
-        // ✅ Prepare order data
+        //  Prepare order data
         const orderData = {
             ...req.body,
             userId: req.user?.id || req.body.userId,
             cartItems: cartItemsWithDetails,
             total: total || 0,
             trackingNumber,
-            trackingHistory: [
-                { status: "Placed", message: "Order placed successfully" },
-            ],
+            trackingHistory: [{ status: "Placed", message: "Order placed successfully" }],
         };
 
-        // ✅ Save order
+        //  Save order
         const order = new Order(orderData);
         await order.save();
 
-        // ✅ Send confirmation email (non-blocking)
+        //  Send confirmation email (non-blocking)
         try {
             await transporter.sendMail({
                 from: `"ATAL OPTICALS" <${process.env.EMAIL_USER}>`,
@@ -183,8 +89,6 @@ exports.createOrder = async (req, res) => {
 
 
 exports.getOrderById = async (req, res) => {
-    console.log(req.params);
-
     try {
         const order = await Order.findById(req.params.id)
         if (!order) {

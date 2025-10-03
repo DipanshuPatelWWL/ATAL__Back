@@ -20,15 +20,15 @@ const adminController = require("../controller/admin-controller");
 const upload = require("../middleware/multer");
 const { authMiddleware } = require("../middleware/auth-middleware");
 
-// ✅ Serve uploads folder (make sure this is also in app.js/server.js)
+//  Serve uploads folder (make sure this is also in app.js/server.js)
 const path = require("path");
 const app = express();
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// ✅ Get single admin by ID
+//  Get single admin by ID
 router.get("/getAdminById/:id", adminController.getAdminById);
 
-// ✅ Update admin profile with image upload
+//  Update admin profile with image upload
 router.put(
     "/updateAdminProfile/:id",
     authMiddleware(),
