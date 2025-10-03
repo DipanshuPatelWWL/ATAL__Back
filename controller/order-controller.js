@@ -183,12 +183,10 @@ exports.createOrder = async (req, res) => {
 
 
 exports.getOrderById = async (req, res) => {
+    console.log(req.params);
+
     try {
         const order = await Order.findById(req.params.id)
-            .populate("userId", "name email")
-            .populate("cartItems.productId", "name price image")
-            .populate("insurance.policyId", "name coverage price durationDays"); // populate insurance detail
-
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
