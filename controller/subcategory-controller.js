@@ -62,7 +62,7 @@ exports.addsubcategory = async (req, res) => {
   try {
     let subCategoryData = { ...req.body };
 
-    // 🔎 Allow either cat_id or cat_sec (categoryName)
+    // Allow either cat_id or cat_sec (categoryName)
     let category;
     if (subCategoryData.cat_id) {
       category = await Category.findById(subCategoryData.cat_id);

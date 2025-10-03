@@ -92,7 +92,6 @@
 
 
 
-
 // backend/model/order-model.js
 const mongoose = require("mongoose");
 
@@ -103,7 +102,7 @@ const orderSchema = new mongoose.Schema(
 
         cartItems: [
             {
-                productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+                productId: String,
                 name: String,
                 image: String,
                 price: Number,
@@ -113,12 +112,24 @@ const orderSchema = new mongoose.Schema(
                 // Per-item selections
                 product_size: [String],
                 product_color: [String],
-                lens: Object, // store lens details if selected
-                insurance: {
-                    policyId: { type: mongoose.Schema.Types.ObjectId, ref: "InsurancePolicy" },
+                lens: Object,
+                enhancement: Object,
+                thickness: Object,
+                tint: Object,
+
+                // Policy (insurance) data
+                policy: {
+                    policyId: { type: String },
+                    name: String,
+                    price: Number,
+                    companyId: String,
+                    companyName: String,
+                    coverage: String,
                     purchasedAt: Date,
-                    validTill: Date,
+                    durationDays: Number,
+                    deductibleRules: [String],
                     pricePaid: Number,
+                    active: Boolean,
                     status: { type: String, enum: ["Active", "Expired"], default: "Active" },
                 },
             },
@@ -166,7 +177,7 @@ const orderSchema = new mongoose.Schema(
             {
                 status: {
                     type: String,
-                    enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"],
+                    enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled", "Returned", "Failed"],
                 },
                 message: String,
                 updatedAt: { type: Date, default: Date.now },

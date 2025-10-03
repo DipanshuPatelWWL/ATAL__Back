@@ -11,7 +11,7 @@ const couponCodeSchema = new mongoose.Schema(
     },
     discountValue: { type: Number, required: true },
     minPurchase: { type: Number, default: 0 },
-    startDate: { type: Date, required: true }, // 👈 NEW: coupon start date
+    startDate: { type: Date, required: true }, //NEW: coupon start date
     expiryDate: { type: Date, required: true },
     isActive: { type: Boolean, default: true },
   },

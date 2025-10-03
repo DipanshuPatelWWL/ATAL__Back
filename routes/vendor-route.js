@@ -12,14 +12,14 @@ router.get("/getVendorById/:id", vendorController.getVendorById);
 
 // Update vendor profile (authenticated user)
 router.put(
-    "/vendorProfile",
-    authMiddleware(),
-    upload.fields([
-        { name: "profileImage", maxCount: 1 },
-        { name: "certifications", maxCount: 5 },
-        { name: "certificates", maxCount: 5 }
-    ]),
-    vendorController.updateProfile
+  "/vendorProfile",
+  authMiddleware(),
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "certifications", maxCount: 5 },
+    { name: "certificates", maxCount: 5 },
+  ]),
+  vendorController.updateProfile
 );
 
 //Delete vendor by ID
