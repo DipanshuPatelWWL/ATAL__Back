@@ -47,11 +47,14 @@ const getProdcutByCategoryname = async (req, res) => {
   }
 };
 
-
-
 const addProduct = async (req, res) => {
   try {
     const productData = { ...req.body };
+
+    // ✅ Ensure stock field exists
+    if (productData.stock === undefined) {
+      productData.stock = 0;
+    }
 
     // Find Category
     const category = await Category.findOne({ categoryName: productData.cat_sec });
@@ -120,10 +123,6 @@ const addProduct = async (req, res) => {
   }
 };
 
-
-
-
-
 const getAllProducts = async (req, res) => {
   try {
     const { search, category, subCategory } = req.query;
@@ -164,7 +163,6 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-
 const getVendorProducts = async (req, res) => {
   try {
     const products = await Product.find({
@@ -184,9 +182,6 @@ const getVendorProducts = async (req, res) => {
     });
   }
 };
-
-
-
 
 // Controller to fetch all products based on filter
 const getVendorApprovalProducts = async (req, res) => {
@@ -208,7 +203,6 @@ const getVendorApprovalProducts = async (req, res) => {
     });
   }
 };
-
 
 // Controller to send product for approval
 const sendProductForApproval = async (req, res) => {
@@ -242,8 +236,6 @@ const sendProductForApproval = async (req, res) => {
   }
 };
 
-
-
 const sendApprovedProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
@@ -273,8 +265,6 @@ const sendApprovedProduct = async (req, res) => {
   }
 };
 
-
-
 const rejectProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
@@ -289,17 +279,16 @@ const rejectProduct = async (req, res) => {
   catch (error) { res.status(500).json({ success: false, message: "Server error", error }); }
 };
 
-
-
-
-
-
-
 // Update product
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     let updateData = { ...req.body };
+
+    // ✅ Ensure stock is numeric if provided
+    if (updateData.stock !== undefined) {
+      updateData.stock = Number(updateData.stock);
+    }
 
     // Handle images
     let finalImages = [];
@@ -329,12 +318,16 @@ const updateProduct = async (req, res) => {
   }
 };
 
-
 // Update vendor product on condition
 const updateVendorProduct = async (req, res) => {
   try {
     const { id } = req.params;
     let updateData = { ...req.body };
+
+    // ✅ Ensure stock is numeric if provided
+    if (updateData.stock !== undefined) {
+      updateData.stock = Number(updateData.stock);
+    }
 
     // Fetch existing product
     const existingProduct = await Product.findById(id);
@@ -378,7 +371,6 @@ const updateVendorProduct = async (req, res) => {
   }
 };
 
-
 //  Delete product
 const deleteProduct = async (req, res) => {
   try {
@@ -391,8 +383,6 @@ const deleteProduct = async (req, res) => {
     return res.status(500).json({ success: false, message: "Error while deleting product", error: error.message });
   }
 };
-
-
 
 const getProductsByCategoryAndSub = async (req, res) => {
   try {
@@ -427,7 +417,6 @@ const getProductsByCategoryAndSub = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // Search products
 const searchProducts = async (req, res) => {
@@ -483,5 +472,5 @@ module.exports = {
   sendProductForApproval,
   sendApprovedProduct,
   rejectProduct,
-  updateVendorProduct
+  updateVendorProduct,
 };

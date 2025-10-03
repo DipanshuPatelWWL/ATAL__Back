@@ -4,6 +4,7 @@ const Company = new mongoose.Schema({
     companyName: {
         type: String,
     },
+    profileImage: { type: String },
     companyEmail: {
         type: String
     },

@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     photo: { type: String, default: "" },
+    profileImage: { type: String },
     password: { type: String, required: true }, // will be hashed
     role: {
       type: String,
