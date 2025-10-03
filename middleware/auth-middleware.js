@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../model/user-model");   // ✔️ Import User model
+const User = require("../model/user-model");   // Import User model
 
 /**
  * protect

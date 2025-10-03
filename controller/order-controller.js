@@ -118,10 +118,10 @@ exports.createOrder = async (req, res) => {
                 .json({ success: false, message: "Email is required" });
         }
 
-        // ✅ Generate tracking number
+        // Generate tracking number
         const trackingNumber = generateTrackingNumber();
 
-        // ✅ Map cart items with all details
+        // Map cart items with all details
         const cartItemsWithDetails = await Promise.all(
             cartItems.map(async (item) => {
                 const product = await productModel.findById(item.id || item.productId);
@@ -139,7 +139,7 @@ exports.createOrder = async (req, res) => {
             })
         );
 
-        // ✅ Prepare order data
+        // Prepare order data
         const orderData = {
             ...req.body,
             userId: req.user?.id || req.body.userId,
@@ -151,11 +151,11 @@ exports.createOrder = async (req, res) => {
             ],
         };
 
-        // ✅ Save order
+        // Save order
         const order = new Order(orderData);
         await order.save();
 
-        // ✅ Send confirmation email (non-blocking)
+        // Send confirmation email (non-blocking)
         try {
             await transporter.sendMail({
                 from: `"ATAL OPTICALS" <${process.env.EMAIL_USER}>`,
@@ -349,7 +349,6 @@ exports.getOrderHistory = async (req, res) => {
         const userId = req.params.userId;
 
         const orders = await Order.find({ userId })
-            .populate("products.productId", "product_name price")
             .sort({ createdAt: -1 }); // latest first
 
         if (!orders || orders.length === 0) {
