@@ -4,6 +4,13 @@ const { authMiddleware } = require("../middleware/auth-middleware");
 
 const router = express.Router();
 
-router.put("/profile", authMiddleware(["vendor", "company"]), updateProfile);
+
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+
+router.put("/profile", authMiddleware(["vendor", "company", "admin"]), upload.single("photo"), updateProfile);
+
+
+// router.put("/profile", authMiddleware(["vendor", "company", "admin"]), updateProfile);
 
 module.exports = router;
