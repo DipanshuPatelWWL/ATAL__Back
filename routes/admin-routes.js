@@ -11,15 +11,15 @@ const upload = multer({ dest: "uploads/" });
 // Get single admin by ID (role-based access)
 router.get(
   "/getAdminById/:id",
-  authMiddleware(["admin", "vendor"]), // only admin can access
+  authMiddleware(["admin"]), // only admin can access
   adminController.getAdminById
 );
 
 router.put(
-  "/updateAdminProfile/:id",
-  authMiddleware(["admin"]), // only admin can update
-  upload.single("profileImage"), // handle single file
-  adminController.updateAdminProfile
+  "/adminProfile",
+  authMiddleware(),
+  upload.fields([{ name: "profileImage", maxCount: 1 }]),
+  adminController.updateProfile
 );
 
 module.exports = router;
