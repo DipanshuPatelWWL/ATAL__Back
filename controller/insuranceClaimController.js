@@ -1,70 +1,7 @@
 const Claim = require("../model/InsuranceClaim");
 
-// // Customer: Submit claim
-// exports.submitClaim = async (req, res) => {
-//   try {
-//     const { policy, purchaseId, claimAmount } = req.body;
-//     const customerId = req.user.id;
 
-//     const claim = new InsuranceClaim({
-//       customer: customerId,
-//       policy,
-//       purchaseId,
-//       claimAmount
-//     });
-
-//     await claim.save();
-//     res.status(201).json({ success: true, data: claim });    
-//   } catch (err) {
-//     res.status(400).json({ success: false, message: err.message });
-//   }
-// };
-
-// // Admin: Get all claims
-// exports.getClaims = async (req, res) => {
-//   try {
-//     const claims = await InsuranceClaim.find()
-//       .populate("customer", "name email")
-//       .populate("policy");
-//     res.json({ success: true, data: claims });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
-
-// // Customer: Get claim history
-// exports.getCustomerClaims = async (req, res) => {
-//   try {     
-//     const customerId = req.user.id;
-//     const claims = await InsuranceClaim.find({ customer: customerId })
-//       .populate("policy")
-//       .sort({ createdAt: -1 });
-
-//     res.json({ success: true, data: claims });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
-
-// // Admin: Update claim status
-// exports.updateClaimStatus = async (req, res) => {
-//   try {
-//     const claim = await InsuranceClaim.findByIdAndUpdate(
-//       req.params.id,
-//       { status: req.body.status },
-//       { new: true }
-//     );
-//     res.json({ success: true, data: claim });
-//   } catch (err) {
-//     res.status(400).json({ success: false, message: err.message });
-//   }
-// };
-
-
-
-
-
-// 👉 Get all claim requests
+//  Get all claim requests
 exports.getAllClaims = async (req, res) => {
   try {
     const claims = await Claim.find()
@@ -76,7 +13,7 @@ exports.getAllClaims = async (req, res) => {
   }
 };
 
-// 👉 Update claim status (Approve / Reject)
+//  Update claim status (Approve / Reject)
 exports.updateClaimStatus = async (req, res) => {
   try {
     const { claimId } = req.params;
@@ -104,12 +41,12 @@ exports.updateClaimStatus = async (req, res) => {
 
 
 
-// ✅ Create a new claim
+//  Create a new claim
 exports.createClaim = async (req, res) => {
   try {
     const { orderId, incidentDate, description, deductibleAmount, userId } = req.body;
 
-    // 📸 Handle uploaded photos
+    // Handle uploaded photos
     const photos = req.files?.photos?.map(file => `/${file.filename}`) || [];
 
     const newClaim = new Claim({
@@ -137,3 +74,12 @@ exports.createClaim = async (req, res) => {
     });
   }
 };
+
+// GET /getClaimStatus?orderId=...&userId=...
+exports.getClaimByCustOrder = async (req, res) => {
+  const { orderId, userId } = req.query;
+  const claim = await Claim.findOne({ orderId, userId });
+  if (!claim) return res.status(404).json({ message: "No claim found" });
+  res.json({ claim });
+};
+
