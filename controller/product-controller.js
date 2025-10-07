@@ -473,6 +473,72 @@ const getProductBySubCatId = async (req, res) => {
   }
 };
 
+
+
+
+const applyVendorDiscount = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { discountType, discountValue } = req.body;
+
+    if (!discountType || discountValue === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Both discount type and value are required.",
+      });
+    }
+
+    if (!["percentage", "flat"].includes(discountType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Discount type must be 'percentage' or 'flat'.",
+      });
+    }
+
+    const numericDiscount = parseFloat(discountValue);
+    if (isNaN(numericDiscount) || numericDiscount < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Discount value must be a valid positive number.",
+      });
+    }
+
+    // Find product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found.",
+      });
+    }
+
+    // Update only discount info (do NOT overwrite sale price)
+    product.discountType = discountType;
+    product.discountValue = numericDiscount;
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Discount added successfully.",
+      discountType: product.discountType,
+      discountValue: product.discountValue,
+    });
+  } catch (error) {
+    console.error("Error in applyVendorDiscount:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while adding discount.",
+    });
+  }
+};
+
+
+
+
+
+
+
 module.exports = {
   addProduct,
   getAllProducts,
@@ -489,4 +555,5 @@ module.exports = {
   sendApprovedProduct,
   rejectProduct,
   updateVendorProduct,
+  applyVendorDiscount
 };
