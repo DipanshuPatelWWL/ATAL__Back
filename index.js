@@ -31,6 +31,7 @@ const examRoutes = require("./routes/exam-routes")
 const doctorRoutes = require("./routes/doctor-routes")
 const couponRoutes = require("./routes/coupon-code-router");
 const insurancePolicy = require("./routes/insurancePolicyRoutes");
+const insuranceClaim = require("./routes/insuranceClaimRoutes");
 const chatRoute = require("./routes/chat-routes");
 const database = require("./config/config");
 const cors = require("cors");
@@ -110,6 +111,7 @@ app.use("/api", examRoutes);
 app.use("/api", doctorRoutes);
 app.use("/api", couponRoutes);
 app.use("/api", insurancePolicy)
+app.use("/api", insuranceClaim)
 app.use("/api", chatRoute)
 
 
