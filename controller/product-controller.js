@@ -479,7 +479,7 @@ const getProductBySubCatId = async (req, res) => {
 const applyVendorDiscount = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { discountType, discountValue } = req.body;
+    const { discountType, discountValue, discountedPrice } = req.body;
 
     if (!discountType || discountValue === undefined) {
       return res.status(400).json({
@@ -515,6 +515,7 @@ const applyVendorDiscount = async (req, res) => {
     // Update only discount info (do NOT overwrite sale price)
     product.discountType = discountType;
     product.discountValue = numericDiscount;
+    product.discountedPrice = discountedPrice;
 
     await product.save();
 
@@ -523,6 +524,7 @@ const applyVendorDiscount = async (req, res) => {
       message: "Discount added successfully.",
       discountType: product.discountType,
       discountValue: product.discountValue,
+      discountedPrice: product.discountedPrice,
     });
   } catch (error) {
     console.error("Error in applyVendorDiscount:", error);

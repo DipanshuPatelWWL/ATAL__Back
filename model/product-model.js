@@ -31,6 +31,9 @@ const ProductSchema = new mongoose.Schema({
         enum: ["percentage", "flat"],
         default: "percentage",
     },
+    discountedPrice: {
+        type: Number
+    },
     discountValue: {
         type: Number,
         default: 0, // 10 means 10% or ₹10 depending on discountType
