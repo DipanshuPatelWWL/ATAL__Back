@@ -73,4 +73,8 @@ router.put('/products/send-approved-product/:productId', productController.sendA
 router.put("/products/reject/:id", productController.rejectProduct);
 
 
+// New route: apply discount
+router.put("/vendor-products/:productId/discount", productController.applyVendorDiscount);
+
+
 module.exports = router;

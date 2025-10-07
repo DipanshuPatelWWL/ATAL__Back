@@ -25,6 +25,19 @@ const ProductSchema = new mongoose.Schema({
     product_image_collection: [String],
 
 
+    // Discount fields (vendor controlled)
+    discountType: {
+        type: String,
+        enum: ["percentage", "flat"],
+        default: "percentage",
+    },
+    discountValue: {
+        type: Number,
+        default: 0, // 10 means 10% or ₹10 depending on discountType
+    },
+
+
+
     stockAvailability: { type: Number, default: 0, min: 0 },
 
 
