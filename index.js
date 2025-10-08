@@ -69,6 +69,8 @@ app.use(express.urlencoded({ extended: true }));
 // Connect to database
 database.connect();
 
+require("./corn/PolicyExpiryJob");
+
 // Serve uploads statically
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use(express.static('public'));

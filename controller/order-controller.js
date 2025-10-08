@@ -3,9 +3,10 @@ const transporter = require("../utils/mailer");
 const paymentTemplate = require("../utils/paymentTemplate");
 const generateTrackingNumber = require("../utils/generateTrackingNumber");
 const productModel = require("../model/product-model");
+const dayjs = require("dayjs");
 
 
-
+//create order
 exports.createOrder = async (req, res) => {
     try {
         const { email, cartItems, total } = req.body;
@@ -17,11 +18,25 @@ exports.createOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: "Email is required" });
         }
 
-        // Generate tracking number
+        const orderDate = new Date();
         const trackingNumber = generateTrackingNumber();
+
         const cartItemsWithDetails = await Promise.all(
             cartItems.map(async (item) => {
                 const product = await productModel.findById(item.id || item.productId);
+
+                let updatedPolicy = null;
+                if (item.policy) {
+                    const expiryDate = dayjs(orderDate).add(item.policy.durationDays, "day").toDate();
+
+                    updatedPolicy = {
+                        ...item.policy,
+                        purchasedAt: orderDate,
+                        expiryDate,
+                        status: "Active",
+                        active: true,
+                    };
+                }
 
                 return {
                     productId: item.id || item.productId,
@@ -32,7 +47,6 @@ exports.createOrder = async (req, res) => {
                     quantity: item.quantity || 1,
                     createdBy: product?.createdBy || "admin",
 
-                    // preserve selections
                     product_size: item.product_size || [],
                     product_color: item.product_color || [],
                     lens: item.lens || null,
@@ -40,12 +54,10 @@ exports.createOrder = async (req, res) => {
                     thickness: item.thickness || null,
                     tint: item.tint || null,
 
-                    // preserve policy / insurance
-                    policy: item.policy || null,
+                    policy: updatedPolicy,
                 };
             })
         );
-
 
         const orderData = {
             ...req.body,
@@ -53,14 +65,15 @@ exports.createOrder = async (req, res) => {
             cartItems: cartItemsWithDetails,
             total: total || 0,
             trackingNumber,
-            trackingHistory: [{ status: "Placed", message: "Order placed successfully" }],
+            trackingHistory: [
+                { status: "Placed", message: "Order placed successfully" },
+            ],
         };
 
-        // Save order
         const order = new Order(orderData);
         await order.save();
 
-        // Send confirmation email (non-blocking)
+        // Send email (optional)
         try {
             await transporter.sendMail({
                 from: `"ATAL OPTICALS" <${process.env.EMAIL_USER}>`,
@@ -82,7 +95,6 @@ exports.createOrder = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
-
 
 
 
