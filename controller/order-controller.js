@@ -28,6 +28,7 @@ exports.createOrder = async (req, res) => {
                     name: item.name,
                     price: item.price,
                     image: item.image,
+                    subCategoryName: item.subCategoryName,
                     quantity: item.quantity || 1,
                     createdBy: product?.createdBy || "admin",
 
