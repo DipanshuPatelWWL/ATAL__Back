@@ -44,6 +44,10 @@ const InquirySchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        uploadDocument: {
+            type: String,
+            required: true,
+        },
     },
     { timestamps: true }
 );

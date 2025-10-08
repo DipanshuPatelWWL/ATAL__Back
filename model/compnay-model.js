@@ -50,7 +50,16 @@ const Company = new mongoose.Schema({
     agreementAccepted: {
         type: Boolean,
         default: false,
-    }
+    },
+    province: {
+        type: String
+    },
+    city: {
+        type: String
+    },
+    postalCode: {
+        type: String
+    },
 },
     { timestamps: true }
 );

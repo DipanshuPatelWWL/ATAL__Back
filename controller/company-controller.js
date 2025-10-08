@@ -59,37 +59,50 @@ exports.deleteCompany = async (req, res) => {
 
 exports.updateCompProfile = async (req, res) => {
   try {
-    // find company by userId
+    // Find company by userId
     const company = await Company.findOne({ userId: req.params.id });
     if (!company) {
       return res.status(404).json({ message: "Company not found" });
     }
 
+    // Copy request body
     const updateData = { ...req.body };
 
-    // Prevent updating restricted fields
+    // Restricted fields that cannot be updated
     const restrictedFields = [
       "status",
       "adminResponse",
       "agreementAccepted",
       "createdAt",
       "updatedAt",
-      "userId", // prevent changing user binding
+      "userId",
     ];
     restrictedFields.forEach((field) => delete updateData[field]);
 
-    // Handle password update (update User model, not Company)
+    // Force postalCode, city, province to be strings
+    ["postalCode", "city", "province"].forEach((field) => {
+      if (updateData[field]) {
+        // If array, take first value; otherwise convert to string
+        updateData[field] = Array.isArray(updateData[field])
+          ? String(updateData[field][0])
+          : String(updateData[field]);
+      }
+    });
+
+
+    // Handle password update (update User model)
     if (req.body.companyPassword) {
       const hashedPassword = await bcrypt.hash(req.body.companyPassword, 10);
       await User.findByIdAndUpdate(company.userId, { password: hashedPassword });
       delete updateData.companyPassword;
     }
 
-    if (req.files?.profileImage) {
+    // Handle profile image upload
+    if (req.files?.profileImage?.[0]) {
       updateData.profileImage = req.files.profileImage[0].filename;
     }
 
-    // Handle uploaded files (multer.fields case → arrays)
+    // Handle other uploaded files
     if (req.files) {
       if (req.files.licenseProof?.[0]) {
         updateData.licenseProof = req.files.licenseProof[0].filename;
@@ -102,6 +115,7 @@ exports.updateCompProfile = async (req, res) => {
       }
     }
 
+    // Update company document in database
     const updatedCompany = await Company.findByIdAndUpdate(
       company._id,
       { $set: updateData },

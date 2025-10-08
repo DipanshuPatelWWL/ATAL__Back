@@ -51,9 +51,10 @@ const addProduct = async (req, res) => {
   try {
     const productData = { ...req.body };
 
-    //  Ensure stock field exists
-    if (productData.stock === undefined) {
-      productData.stock = 0;
+    if (Array.isArray(productData.stockAvailability)) {
+      productData.stockAvailability = Number(productData.stockAvailability[0]);
+    } else {
+      productData.stockAvailability = Number(productData.stockAvailability);
     }
 
     // Find Category
@@ -318,54 +319,62 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// Update vendor product on condition
+
+
 const updateVendorProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    let updateData = { ...req.body };
-
-    //  Ensure stock is numeric if provided
-    if (updateData.stock !== undefined) {
-      updateData.stock = Number(updateData.stock);
-    }
-
-    // Fetch existing product
     const existingProduct = await Product.findById(id);
     if (!existingProduct) return res.status(404).json({ success: false, message: "Product not found" });
 
-    // If product is sent for approval, allow only price and sale_price updates
+    let updateData = { ...req.body };
+    // Handle images
+    let finalImages = [];
+    if (updateData.existingImages) {
+      finalImages = typeof updateData.existingImages === "string"
+        ? JSON.parse(updateData.existingImages)
+        : updateData.existingImages;
+    }
+
+    if (req.files?.product_image_collection) {
+      finalImages = [...finalImages, ...req.files.product_image_collection.map(f => f.filename)];
+    }
+    updateData.product_image_collection = finalImages;
+
+    if (req.files?.product_lens_image1?.[0]) {
+      updateData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+    }
+    if (req.files?.product_lens_image2?.[0]) {
+      updateData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+    }
+    // Normalize stockAvailability
+    if (updateData.stockAvailability !== undefined && updateData.stockAvailability !== null) {
+      // Convert to number
+      const val = Array.isArray(updateData.stockAvailability)
+        ? updateData.stockAvailability[0]
+        : updateData.stockAvailability;
+      updateData.stockAvailability = Number(val);
+    } else {
+      updateData.stockAvailability = existingProduct.stockAvailability;
+    }
+
+    // Restrict updates if product is sent for approval
     if (existingProduct.isSentForApproval) {
-      const allowedFields = ["price", "sale_price"];
+      const allowedFields = ["product_price", "product_sale_price", "stockAvailability"];
       updateData = Object.keys(updateData)
         .filter(key => allowedFields.includes(key))
         .reduce((obj, key) => {
-          obj[key] = req.body[key];
+          obj[key] = updateData[key];
           return obj;
         }, {});
-    } else {
-      // Handle images only if product is NOT sent for approval
-      let finalImages = [];
-      if (req.body.existingImages) {
-        finalImages = typeof req.body.existingImages === "string"
-          ? JSON.parse(req.body.existingImages)
-          : req.body.existingImages;
-      }
-      if (req.files?.product_image_collection) {
-        finalImages = [...finalImages, ...req.files.product_image_collection.map(f => f.filename)];
-      }
-      updateData.product_image_collection = finalImages;
-
-      if (req.files?.product_lens_image1?.[0]) {
-        updateData.product_lens_image1 = req.files.product_lens_image1[0].filename;
-      }
-      if (req.files?.product_lens_image2?.[0]) {
-        updateData.product_lens_image2 = req.files.product_lens_image2[0].filename;
-      }
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
-    return res.status(200).json({ success: true, message: "Product updated successfully", data: updatedProduct });
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
+    return res.status(200).json({ success: true, message: "Product updated successfully", data: updatedProduct, });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Error while updating product", error: error.message });
   }
