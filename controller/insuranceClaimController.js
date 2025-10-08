@@ -17,18 +17,18 @@ exports.getAllClaims = async (req, res) => {
 exports.updateClaimStatus = async (req, res) => {
   try {
     const { claimId } = req.params;
-    const { status, notes } = req.body;
+    const { status, notes, claimAmount } = req.body; // include claimAmount
 
     if (!["Approved", "Rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
-
-    const updated = await Claim.findByIdAndUpdate(
-      claimId,
-      { status, notes },
-      { new: true }
-    );
-
+    // Build update object dynamically
+    const updateData = { status };
+    if (notes !== undefined) updateData.notes = notes;
+    if (status === "Approved" && claimAmount !== undefined) {
+      updateData.claimAmount = claimAmount;
+    }
+    const updated = await Claim.findByIdAndUpdate(claimId, updateData, { new: true });
     if (!updated) {
       return res.status(404).json({ message: "Claim not found" });
     }
@@ -41,10 +41,11 @@ exports.updateClaimStatus = async (req, res) => {
 
 
 
+
 //  Create a new claim
 exports.createClaim = async (req, res) => {
   try {
-    const { orderId, incidentDate, description, deductibleAmount, userId } = req.body;
+    const { orderId, description, userId } = req.body;
 
     // Handle uploaded photos
     const photos = req.files?.photos?.map(file => `/${file.filename}`) || [];
@@ -52,10 +53,9 @@ exports.createClaim = async (req, res) => {
     const newClaim = new Claim({
       orderId,
       userId,
-      incidentDate,
       description,
       photos,
-      deductibleAmount,
+      claimDate: new Date(),
     });
 
     await newClaim.save();
@@ -75,11 +75,30 @@ exports.createClaim = async (req, res) => {
   }
 };
 
+
 // GET /getClaimStatus?orderId=...&userId=...
 exports.getClaimByCustOrder = async (req, res) => {
   const { orderId, userId } = req.query;
   const claim = await Claim.findOne({ orderId, userId });
   if (!claim) return res.status(404).json({ message: "No claim found" });
   res.json({ claim });
+};
+
+
+exports.getClaimById = async (req, res) => {
+  try {
+    const claim = await Claim.findById(req.params.claimId)
+      .populate("orderId")
+      .populate("userId");
+
+    if (!claim) {
+      return res.status(500).json({ message: "Claim not found" });
+    }
+
+    res.status(200).json(claim);
+  } catch (error) {
+    console.error("Error fetching claim:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
