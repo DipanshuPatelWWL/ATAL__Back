@@ -82,7 +82,32 @@ const getEyeExam = async (req, res) => {
     }
 }
 
+
+// Get all Eye Exams
+const getAllEyeExam = async (req, res) => {
+    try {
+        const eyeExams = await EyeExam.find().sort({ createdAt: -1 }); // optional: latest first
+
+        return res.status(200).json({
+            success: true,
+            message: "All Eye Exams fetched successfully",
+            data: eyeExams,
+        });
+    } catch (error) {
+        console.error("Error fetching eye exams:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch eye exams",
+            error: error.message,
+        });
+    }
+};
+
+module.exports = { getAllEyeExam };
+
+
 module.exports = {
     addEyeExam,
-    getEyeExam
+    getEyeExam,
+    getAllEyeExam
 }

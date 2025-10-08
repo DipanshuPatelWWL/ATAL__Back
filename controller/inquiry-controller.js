@@ -28,7 +28,9 @@ const addInquiry = async (req, res) => {
             message
         } = req.body;
 
+        const uploadDocument = req.file ? req.file.filename : null;
 
+        // 1. Basic required field validation
         if (!userType || !name || !email) {
             return res.status(400).json({
                 success: false,
@@ -36,16 +38,18 @@ const addInquiry = async (req, res) => {
             });
         }
 
-
+        // 2. Vendor specific validation
         if (userType === "vendor") {
             if (!businessNumber || !vendorType) {
                 return res.status(400).json({
                     success: false,
-                    message: "Vendors must provide business number and vendor type (lab, brand, supplier)",
+                    message:
+                        "Vendors must provide business number and vendor type (lab, brand, supplier)",
                 });
             }
         }
 
+        //  3. Company specific validation
         if (userType === "company") {
             if (!registrationNumber) {
                 return res.status(400).json({
@@ -55,6 +59,24 @@ const addInquiry = async (req, res) => {
             }
         }
 
+        //  4. Upload document validation
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please upload a document",
+            });
+        }
+
+        // 5. Allow only PDF
+        const allowedMimeTypes = ["application/pdf"];
+        if (!allowedMimeTypes.includes(req.file.mimetype)) {
+            return res.status(400).json({
+                success: false,
+                message: "Images are not allowed. Please upload a PDF file only.",
+            });
+        }
+
+        // 6. Generate next inquiry number
         const lastInquiry = await InquiryModel.findOne().sort({ createdAt: -1 });
 
         let nextNumber = 1;
@@ -67,6 +89,7 @@ const addInquiry = async (req, res) => {
 
         const inquiryNumber = `INC-${String(nextNumber).padStart(4, "0")}`;
 
+        // 7. Save new inquiry
         const newInquiry = new InquiryModel({
             userType,
             inquiryNumber,
@@ -77,10 +100,12 @@ const addInquiry = async (req, res) => {
             vendorType: userType === "vendor" ? vendorType : undefined,
             registrationNumber: userType === "company" ? registrationNumber : undefined,
             message,
+            uploadDocument,
         });
 
         await newInquiry.save();
 
+        // 8. Send email to admin
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: process.env.ADMIN_EMAIL,
@@ -91,7 +116,7 @@ const addInquiry = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Inquiry Added Successfully & Send to Admin",
+            message: "Inquiry Added Successfully & Sent to Admin",
             data: newInquiry,
         });
     } catch (err) {
