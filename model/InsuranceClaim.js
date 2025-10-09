@@ -6,10 +6,14 @@ const claimSchema = new mongoose.Schema({
     claimDate: Date,
     description: String,
     photos: [String],
-    claimAmount: Number, // corrected spelling
+    claimAmount: Number,
     status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
     approvedReplacementOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
-    notes: String
+    notes: String,
+    rejectionReason: {
+        type: String,
+        trim: true,
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Claim", claimSchema);

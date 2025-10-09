@@ -17,18 +17,32 @@ exports.getAllClaims = async (req, res) => {
 exports.updateClaimStatus = async (req, res) => {
   try {
     const { claimId } = req.params;
-    const { status, notes, claimAmount } = req.body; // include claimAmount
+    const { status, notes, claimAmount, rejectionReason } = req.body;
 
     if (!["Approved", "Rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
-    // Build update object dynamically
+
     const updateData = { status };
+
     if (notes !== undefined) updateData.notes = notes;
-    if (status === "Approved" && claimAmount !== undefined) {
-      updateData.claimAmount = claimAmount;
+
+    if (status === "Approved") {
+      if (claimAmount !== undefined) updateData.claimAmount = claimAmount;
+      updateData.rejectionReason = "";
     }
+
+    if (status === "Rejected") {
+      if (!rejectionReason || rejectionReason.trim() === "") {
+        return res.status(400).json({ message: "Rejection reason is required" });
+      }
+      updateData.rejectionReason = rejectionReason;
+      updateData.claimAmount = undefined;
+      updateData.notes = "";
+    }
+
     const updated = await Claim.findByIdAndUpdate(claimId, updateData, { new: true });
+
     if (!updated) {
       return res.status(404).json({ message: "Claim not found" });
     }
@@ -38,6 +52,7 @@ exports.updateClaimStatus = async (req, res) => {
     res.status(500).json({ message: "Failed to update claim status", error });
   }
 };
+
 
 
 
