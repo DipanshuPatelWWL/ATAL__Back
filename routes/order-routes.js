@@ -12,6 +12,7 @@ router.get("/order/:id", orderController.getOrderById);
 router.get("/order/track/:trackingNumber", orderController.trackOrderByTrackingNumber);
 
 router.put("/order/updateOrderStatus/:orderId/status", orderController.updateOrderStatus);
+router.put("/cancleOrder/:orderId", orderController.cancleOrder);
 
 router.get("/order/getOrderTracking/:orderId/tracking", orderController.getOrderTracking);
 router.get("/allOrder", orderController.getAllOrders);

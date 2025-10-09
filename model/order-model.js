@@ -107,9 +107,12 @@ const orderSchema = new mongoose.Schema(
           ],
         },
         message: String,
+        updatedBy: { type: String },
+        actorName: { type: String },
         updatedAt: { type: Date, default: Date.now },
       },
     ],
+
   },
   { timestamps: true }
 );

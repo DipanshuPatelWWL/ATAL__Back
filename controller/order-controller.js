@@ -150,6 +150,68 @@ exports.updateOrderStatus = async (req, res) => {
 };
 
 
+
+exports.cancleOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res
+                .status(400)
+                .json({ success: false, message: "User ID is required" });
+        }
+
+        const order = await Order.findById(orderId).populate("userId", "name");
+
+        if (!order) {
+            return res
+                .status(404)
+                .json({ success: false, message: "Order not found" });
+        }
+
+        // Ensure order belongs to this customer
+        if (order.userId._id.toString() !== userId.toString()) {
+            return res
+                .status(403)
+                .json({ success: false, message: "Not authorized to cancel this order" });
+        }
+
+        // Only allow cancellation if order is Placed or Processing
+        if (!["Placed", "Processing"].includes(order.orderStatus)) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot cancel order at ${order.orderStatus} stage`,
+            });
+        }
+
+        // Update order
+        order.orderStatus = "Cancelled";
+
+        // Add tracking history
+        order.trackingHistory.push({
+            status: "Cancelled",
+            message: "Order cancelled by customer",
+            updatedBy: "Customer",
+            actorName: order.userId.name || "Customer",
+        });
+
+        await order.save();
+
+        res.json({
+            success: true,
+            message: "Order cancelled successfully",
+            order,
+        });
+    } catch (err) {
+        console.error("Cancel Order Error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+
+
 exports.getOrderTracking = async (req, res) => {
     try {
         const { orderId } = req.params;
