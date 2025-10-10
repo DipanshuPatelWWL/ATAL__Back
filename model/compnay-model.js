@@ -1,67 +1,70 @@
 const mongoose = require("mongoose");
 
-const Company = new mongoose.Schema({
+const Company = new mongoose.Schema(
+  {
     companyName: {
-        type: String,
+      type: String,
     },
     profileImage: { type: String },
     companyEmail: {
-        type: String
+      type: String,
     },
     companyPassword: String,
     registrationNumber: {
-        type: String
+      type: String,
     },
     userId: { type: String },
     legalEntity: {
-        type: String,
+      type: String,
     },
     networkPayerId: {
-        type: String
+      type: String,
     },
     efRemittance: {
-        type: String
+      type: String,
     },
     providerName: {
-        type: String
+      type: String,
     },
     providerNumber: {
-        type: String
+      type: String,
     },
     providerEmail: {
-        type: String
+      type: String,
     },
     claim: {
-        type: [String],
-        enum: ["EDI", "Portal", "Email", "Fax"],
+      type: [String],
+      enum: ["EDI", "Portal", "Email", "Fax"],
     },
     signedAgreement: {
-        type: String,
+      type: String,
     },
     licenseProof: {
-        type: String
+      type: String,
     },
     voidCheque: {
-        type: String
+      type: String,
     },
     serviceStandards: {
-        type: String
+      type: String,
     },
     agreementAccepted: {
-        type: Boolean,
-        default: false,
+      type: Boolean,
+      default: false,
     },
     province: {
-        type: String
+      type: String,
     },
     city: {
-        type: String
+      type: String,
     },
     postalCode: {
-        type: String
+      type: String,
     },
-},
-    { timestamps: true }
+    address1: { type: String },
+    address2: { type: String },
+  },
+  { timestamps: true }
 );
 
-module.exports = mongoose.model('Company', Company)
+module.exports = mongoose.model("Company", Company);
