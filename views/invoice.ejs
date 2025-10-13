@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8" />
   <title>Invoice - Atal Opticals</title>
@@ -11,10 +12,14 @@
       color: #333;
       background: #f9f9f9;
     }
-    h1, h2, h3 {
+
+    h1,
+    h2,
+    h3 {
       color: #e7000b;
       margin-bottom: 10px;
     }
+
     .header {
       border-bottom: 2px solid #e7000b;
       padding-bottom: 10px;
@@ -23,14 +28,20 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .header img {
       max-width: 150px;
     }
+
     .company-info {
       text-align: right;
       font-size: 12px;
     }
-    .section { margin-bottom: 30px; }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -38,21 +49,30 @@
       font-size: 12px;
       background: #fff;
     }
-    table, th, td {
+
+    table,
+    th,
+    td {
       border: 1px solid #ddd;
     }
+
     th {
       background: #e7000b;
       color: white;
       padding: 8px;
       text-align: left;
     }
-    td { padding: 8px; }
+
+    td {
+      padding: 8px;
+    }
+
     .summary {
       text-align: right;
       margin-top: 20px;
       font-size: 13px;
     }
+
     .footer {
       margin-top: 30px;
       font-size: 10px;
@@ -67,31 +87,35 @@
       border-radius: 10px;
       padding: 20px;
       margin-top: 25px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
     }
+
     .card h2 {
       margin-top: 0;
       border-bottom: 2px solid #e7000b;
       padding-bottom: 8px;
       font-size: 16px;
     }
-    .card ul, .card ol {
+
+    .card ul,
+    .card ol {
       margin: 10px 0 0 20px;
     }
+
     .card p {
       margin-top: 10px;
       line-height: 1.5;
     }
   </style>
 </head>
+
 <body>
 
   <!-- Invoice Header -->
   <div class="header">
     <img src="<%= process.env.NODE_ENV === 'production' 
               ? 'https://atal-back-updated.onrender.com/logo1.png' 
-              : 'http://localhost:4000/logo1.png' %>" 
-     alt="Atal Opticals Logo" />
+              : 'http://localhost:4000/logo1.png' %>" alt="Atal Opticals Logo" />
     <div class="company-info">
       <p>10906 Hurontario St, Unit D7</p>
       <p>Brampton, ON L7A 3R9</p>
@@ -102,50 +126,88 @@
   <!-- Invoice Section -->
   <div class="section">
     <h2>Invoice</h2>
-    <p><strong>Invoice #:</strong> <%= order._id.toString().slice(-6) %></p>
-    <p><strong>Date:</strong> <%= order.createdAt.toDateString() %></p>
-    <p><strong>Bill To:</strong> 
-      <%= order.shippingAddress.fullName %>, 
-      <%= order.shippingAddress.address %>, 
-      <%= order.shippingAddress.city %> 
-      <%= order.shippingAddress.postalCode %>
+    <p><strong>Invoice #:</strong>
+      <%= order._id.toString().slice(-6) %>
+    </p>
+    <p><strong>Date:</strong>
+      <%= order.createdAt.toDateString() %>
+    </p>
+    <p><strong>Bill To:</strong>
+      <%= order.shippingAddress.fullName %>,
+        <%= order.shippingAddress.address %>,
+          <%= order.shippingAddress.city %>
+            <%= order.shippingAddress.postalCode %>
     </p>
 
     <table>
       <thead>
-        <tr><th>#</th><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+        <tr>
+          <th>#</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
       </thead>
       <tbody>
-        <% order.cartItems.forEach((item, i) => { %>
+        <% order.cartItems.forEach((item, i)=> { %>
           <tr>
-            <td><%= i+1 %></td>
-            <td><%= item.name %></td>
-            <td><%= item.quantity %></td>
-            <td>$<%= item.price.toFixed(2) %></td>
-            <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
+            <td>
+              <%= i + 1 %>
+            </td>
+            <td>
+              <strong>
+                <%= item.name %>
+              </strong>
+
+              <% if (item.policy && item.policy.name) { %>
+                <div style="font-size: 11px; color: #555;">
+                  Policy: <%= item.policy.name %> ($<%= item.policy.price.toFixed(2) %>)
+                </div>
+                <% } %>
+
+                  <% if (item.lens && item.lens.lens && item.lens.lens.selectedLens) { %>
+                    <div style="font-size: 11px; color: #555;">
+                      Lens: <%= item.lens.lens.selectedLens %> ($<%= item.lens.totalPrice.toFixed(2) %>)
+                    </div>
+                    <% } %>
+            </td>
+            <td>
+              <%= item.quantity %>
+            </td>
+            <td>$<%= item.price.toFixed(2) %>
+            </td>
+            <td>$<%= (item.price * item.quantity).toFixed(2) %>
+            </td>
           </tr>
-        <% }) %>
+          <% }) %>
       </tbody>
     </table>
 
     <div class="summary">
-      <p>Subtotal: $<%= order.subtotal.toFixed(2) %></p>
-      <p>Tax: $<%= order.tax.toFixed(2) %></p>
-      <p>Shipping: $<%= order.shipping.toFixed(2) %></p>
-      <h3>Total: $<%= order.total.toFixed(2) %></h3>
+      <p>Subtotal: $<%= order.subtotal.toFixed(2) %>
+      </p>
+      <p>Tax: $<%= order.tax.toFixed(2) %>
+      </p>
+      <p>Shipping: $<%= order.shipping.toFixed(2) %>
+      </p>
+      <h3>Total: $<%= order.total.toFixed(2) %>
+      </h3>
     </div>
   </div>
 
   <!-- Warranty Card -->
   <div class="card">
     <h2>Warranty Card</h2>
-    <p><strong>Purchase Date:</strong> <%= order.createdAt.toDateString() %></p>
-    <p><strong>Valid Until:</strong> 
+    <p><strong>Purchase Date:</strong>
+      <%= order.createdAt.toDateString() %>
+    </p>
+    <p><strong>Valid Until:</strong>
       <%= new Date(new Date(order.createdAt).setFullYear(new Date(order.createdAt).getFullYear() + 1)).toDateString() %>
     </p>
 
     <p>
-      All eyewear sold at Atal Optical is covered under the standard manufacturer’s limited warranty 
+      All eyewear sold at Atal Optical is covered under the standard manufacturer’s limited warranty
       (brands include Ray-Ban, Armani, Dolce & Gabbana, and others).
     </p>
 
@@ -163,10 +225,12 @@
     <h2>Return & Exchange Policy</h2>
     <ol>
       <li>Prescription eyewear and lenses are final sale and non-exchangeable.</li>
-      <li>Non-prescription sunglasses/frames may be exchanged within 7 days if unused and in original packaging. No refunds.</li>
+      <li>Non-prescription sunglasses/frames may be exchanged within 7 days if unused and in original packaging. No
+        refunds.</li>
       <li>No restocking fees for product-related visits or adjustments.</li>
       <li>Fit adjustments, screw replacements, and basic aftercare are free of charge.</li>
-      <li>Contact lenses may be exchanged only if unopened, sealed, and within expiry. Opened boxes are not eligible.</li>
+      <li>Contact lenses may be exchanged only if unopened, sealed, and within expiry. Opened boxes are not eligible.
+      </li>
       <li>No returns on eye drops, cleaning solutions, or other consumables for health & safety reasons.</li>
     </ol>
   </div>
@@ -176,4 +240,5 @@
   </div>
 
 </body>
+
 </html>
