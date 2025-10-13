@@ -18,6 +18,9 @@ router.get("/order/getOrderTracking/:orderId/tracking", orderController.getOrder
 router.get("/allOrder", orderController.getAllOrders);
 router.get("/vendor-orders", orderController.getAllVendorOrders);
 router.get("/order/history/:userId", orderController.getOrderHistory);
+router.put("/renewPolicy/:orderId", orderController.renewPolicy);
+router.put("/payPolicy/:orderId", orderController.payPolicy);
+
 
 
 module.exports = router;

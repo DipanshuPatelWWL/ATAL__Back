@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+    },
     email: { type: String, required: true },
 
     cartItems: [
@@ -42,7 +46,29 @@ const orderSchema = new mongoose.Schema(
             default: "Active",
           },
           expiryDate: Date,
+          paymentStatus: {
+            type: String,
+            enum: ["Pending", "Paid"],
+            default: "Pending",
+          },
         },
+
+        previousPolicies: [
+          {
+            name: String,
+            price: Number,
+            companyId: String,
+            companyName: String,
+            coverage: String,
+            purchasedAt: Date,
+            expiryDate: Date,
+            durationDays: Number,
+            status: String,
+            active: Boolean,
+            deductibleRules: [Object],
+            renewedAt: Date, // when this policy was renewed
+          },
+        ],
       },
     ],
 
@@ -112,7 +138,6 @@ const orderSchema = new mongoose.Schema(
         updatedAt: { type: Date, default: Date.now },
       },
     ],
-
   },
   { timestamps: true }
 );
