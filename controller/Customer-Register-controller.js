@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const Customer = require("../model/customer-model"); // adjust path if needed
+const Customer = require("../model/customer-model"); 
 
 const registerCustomer = async (req, res) => {
     try {
@@ -58,11 +58,17 @@ const registerCustomer = async (req, res) => {
     }
 };
 
-
-// Get Customer by ID
 const fetchCustomerById = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Validate ID
+        if (!id || id === "null") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid customer ID",
+            });
+        }
 
         const customer = await Customer.findById(id);
 
@@ -87,7 +93,16 @@ const fetchCustomerById = async (req, res) => {
     }
 };
 
+
 const updateCustomer = async (req, res) => {
+
+    if (!id || id === "null") {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid customer ID",
+    });
+}
+
 
     try {
         const { id } = req.params
