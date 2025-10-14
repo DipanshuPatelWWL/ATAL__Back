@@ -288,21 +288,15 @@ exports.trackOrderByTrackingNumber = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    // Fetch all orders
-    const orders = await Order.find();
+    // Fetch all orders, latest first
+    const orders = await Order.find().sort({ createdAt: -1 });
 
-    // Filter orders where at least one cartItem is created by a vendor
+    // Filter orders where at least one cartItem is created by admin
     const adminOrders = orders.filter((order) =>
       order.cartItems.some(
-        (item) => item.createdBy && item.createdBy == "admin"
+        (item) => item.createdBy && item.createdBy === "admin"
       )
     );
-
-    // if (!adminOrders.length) {
-    //   return res
-    //     .status(400)
-    //     .json({ success: false, message: "No admin orders found" });
-    // }
 
     let updatedOrders = [];
     for (let order of adminOrders) {
@@ -314,10 +308,10 @@ exports.getAllOrders = async (req, res) => {
     if (!updatedOrders.length) {
       return res
         .status(404)
-        .json({ success: false, message: "No vendor orders found" });
+        .json({ success: false, message: "No admin orders found" });
     }
 
-    res.json({ success: true, orders: adminOrders });
+    res.json({ success: true, orders: updatedOrders });
   } catch (err) {
     console.error("Get Orders Error:", err);
     res
