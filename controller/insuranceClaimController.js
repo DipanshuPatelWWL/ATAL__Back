@@ -1,6 +1,5 @@
 const Claim = require("../model/InsuranceClaim");
 
-
 //  Get all claim requests
 exports.getAllClaims = async (req, res) => {
   try {
@@ -34,14 +33,18 @@ exports.updateClaimStatus = async (req, res) => {
 
     if (status === "Rejected") {
       if (!rejectionReason || rejectionReason.trim() === "") {
-        return res.status(400).json({ message: "Rejection reason is required" });
+        return res
+          .status(400)
+          .json({ message: "Rejection reason is required" });
       }
       updateData.rejectionReason = rejectionReason;
       updateData.claimAmount = undefined;
       updateData.notes = "";
     }
 
-    const updated = await Claim.findByIdAndUpdate(claimId, updateData, { new: true });
+    const updated = await Claim.findByIdAndUpdate(claimId, updateData, {
+      new: true,
+    });
 
     if (!updated) {
       return res.status(404).json({ message: "Claim not found" });
@@ -53,21 +56,20 @@ exports.updateClaimStatus = async (req, res) => {
   }
 };
 
-
-
-
-
 //  Create a new claim
 exports.createClaim = async (req, res) => {
   try {
-    const { orderId, description, userId } = req.body;
+    const { orderId, description, userId, productId, productDetails } =
+      req.body;
 
     // Handle uploaded photos
-    const photos = req.files?.photos?.map(file => `/${file.filename}`) || [];
+    const photos = req.files?.photos?.map((file) => `/${file.filename}`) || [];
 
     const newClaim = new Claim({
       orderId,
       userId,
+      productId,
+      productDetails: productDetails ? JSON.parse(productDetails) : {},
       description,
       photos,
       claimDate: new Date(),
@@ -90,7 +92,6 @@ exports.createClaim = async (req, res) => {
   }
 };
 
-
 // GET /getClaimStatus?orderId=...&userId=...
 exports.getClaimByCustOrder = async (req, res) => {
   const { orderId, userId } = req.query;
@@ -98,7 +99,6 @@ exports.getClaimByCustOrder = async (req, res) => {
   if (!claim) return res.status(404).json({ message: "No claim found" });
   res.json({ claim });
 };
-
 
 exports.getClaimById = async (req, res) => {
   try {
@@ -116,4 +116,3 @@ exports.getClaimById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-

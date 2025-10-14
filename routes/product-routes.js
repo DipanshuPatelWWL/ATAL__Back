@@ -60,7 +60,12 @@ router.delete(
   productController.deleteProduct
 );
 
-router.get("/getVendorProduct", productController.getVendorProducts);
+router.get(
+  "/getVendorProduct",
+  authMiddleware(["vendor"]),
+  productController.getVendorProducts
+);
+
 router.get("/getVendorApprovalProduct", productController.getVendorApprovalProducts);
 
 
