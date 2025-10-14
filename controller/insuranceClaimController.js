@@ -4,6 +4,7 @@ const Claim = require("../model/InsuranceClaim");
 exports.getAllClaims = async (req, res) => {
   try {
     const claims = await Claim.find()
+      .sort({ createdAt: -1 }) // <-- Sort by newest first
       .populate("userId", "name email")
       .populate("orderId");
     res.status(200).json(claims);
