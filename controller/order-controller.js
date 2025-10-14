@@ -305,7 +305,7 @@ exports.getAllOrders = async (req, res) => {
     // }
 
     let updatedOrders = [];
-    for (let order of vendorOrders) {
+    for (let order of adminOrders) {
       const changed = checkAndUpdateExpiredPolicies(order);
       if (changed) await order.save();
       updatedOrders.push(order);
@@ -384,55 +384,43 @@ exports.getOrderHistory = async (req, res) => {
   }
 };
 
+
 exports.renewPolicy = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { policyId, policyName, companyId } = req.body;
+    const { policyId } = req.body;
 
     const order = await Order.findById(orderId);
-    if (!order)
-      return res
-        .status(404)
-        .json({ success: false, message: "Order not found" });
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
-    // Safely find the cart item
-   const cartItem = order.cartItems.find((item) => {
-  if (!item.policy) return false;
+    // Find the cart item by policyId
+    const cartItemIndex = order.cartItems.findIndex(
+      (item) => item.policy && (item.policy._id?.toString() === policyId || item.policy.policyId === policyId)
+    );
 
-  // First, check if policy._id exists and matches
-  if (item.policy._id && policyId) {
-    return item.policy._id.toString() === policyId;
-  }
+    if (cartItemIndex === -1)
+      return res.status(404).json({ success: false, message: "Policy not found" });
 
-  // fallback: match by name + companyId
-  return (
-    item.policy.name === req.body.policyName &&
-    item.policy.companyId === req.body.companyId
-  );
-});
-
-    if (!cartItem)
-      return res
-        .status(404)
-        .json({ success: false, message: "Policy not found" });
-
-    const oldPolicy = cartItem.policy;
-
+    const oldPolicy = order.cartItems[cartItemIndex].policy;
     const today = new Date();
     const durationDays = oldPolicy.durationDays || 1;
 
     // Save old policy in previousPolicies
-    cartItem.previousPolicies = cartItem.previousPolicies || [];
-    cartItem.previousPolicies.push({ ...oldPolicy, renewedAt: today });
+    order.cartItems[cartItemIndex].previousPolicies = order.cartItems[cartItemIndex].previousPolicies || [];
+    order.cartItems[cartItemIndex].previousPolicies.push({ ...oldPolicy, renewedAt: today });
 
     // Create new renewed policy
-    cartItem.policy = {
+    order.cartItems[cartItemIndex].policy = {
       ...oldPolicy,
       purchasedAt: today,
       expiryDate: new Date(today.getTime() + durationDays * 24 * 60 * 60 * 1000),
       status: "Active",
       active: true,
+      paymentStatus: "Paid",
     };
+
+    // Mark the array as modified (important for Mongoose)
+    order.markModified("cartItems");
 
     await order.save();
 
@@ -444,19 +432,27 @@ exports.renewPolicy = async (req, res) => {
 };
 
 
+
+
 exports.payPolicy = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { policyId } = req.body;
 
     const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
 
     const cartItem = order.cartItems.find(
       (item) => item.policy && item.policy._id?.toString() === policyId
     );
 
-    if (!cartItem) return res.status(404).json({ success: false, message: "Policy not found in order" });
+    if (!cartItem)
+      return res
+        .status(404)
+        .json({ success: false, message: "Policy not found in order" });
 
     // Mark policy as paid
     cartItem.policy.paymentStatus = "Paid";
@@ -471,6 +467,8 @@ exports.payPolicy = async (req, res) => {
     });
   } catch (err) {
     console.error("Pay Policy Error:", err);
-    res.status(500).json({ success: false, message: "Failed to pay for policy" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to pay for policy" });
   }
 };
