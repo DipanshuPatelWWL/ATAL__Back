@@ -12,15 +12,23 @@ const getProductById = async (req, res) => {
       _id: id,
       $or: [
         { productStatus: "Approved" },
-        { productStatus: { $exists: false } } // handles case when productStatus key doesn't exist
-      ]
+        { productStatus: { $exists: false } }, // handles case when productStatus key doesn't exist
+      ],
     });
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
     res.status(200).json({ success: true, product });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching product", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching product",
+        error: error.message,
+      });
   }
 };
 
@@ -37,8 +45,8 @@ const getProdcutByCategoryname = async (req, res) => {
       // productStatus: "Approved"
       $or: [
         { productStatus: "Approved" },
-        { productStatus: { $exists: false } }
-      ]
+        { productStatus: { $exists: false } },
+      ],
     });
 
     res.json(products);
@@ -58,9 +66,16 @@ const addProduct = async (req, res) => {
     }
 
     // Find Category
-    const category = await Category.findOne({ categoryName: productData.cat_sec });
+    const category = await Category.findOne({
+      categoryName: productData.cat_sec,
+    });
     if (!category) {
-      return res.status(400).json({ success: false, message: `Category '${productData.cat_sec}' not found` });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: `Category '${productData.cat_sec}' not found`,
+        });
     }
     productData.cat_id = category._id;
 
@@ -78,18 +93,22 @@ const addProduct = async (req, res) => {
         await subCategory.save();
       }
       productData.subCat_id = subCategory._id;
+      
     }
 
     // Handle file uploads
     if (req.files) {
       if (req.files.product_image_collection) {
-        productData.product_image_collection = req.files.product_image_collection.map(f => f.filename);
+        productData.product_image_collection =
+          req.files.product_image_collection.map((f) => f.filename);
       }
       if (req.files.product_lens_image1?.[0]) {
-        productData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+        productData.product_lens_image1 =
+          req.files.product_lens_image1[0].filename;
       }
       if (req.files.product_lens_image2?.[0]) {
-        productData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+        productData.product_lens_image2 =
+          req.files.product_lens_image2[0].filename;
       }
     }
 
@@ -110,17 +129,30 @@ const addProduct = async (req, res) => {
       productData.createdBy = req.user.role;
       productData.createdDate = now;
     } else {
-      return res.status(403).json({ success: false, message: "Unauthorized role to add product" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized role to add product" });
     }
 
     // Save product
     const product = new Product(productData);
     const savedProduct = await product.save();
 
-    return res.status(201).json({ success: true, message: "Product added successfully", data: savedProduct });
-
+    return res
+      .status(201)
+      .json({
+        success: true,
+        message: "Product added successfully",
+        data: savedProduct,
+      });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error while adding product", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error while adding product",
+        error: error.message,
+      });
   }
 };
 
@@ -144,7 +176,11 @@ const getAllProducts = async (req, res) => {
 
     // Status filter (merge with query)
     query.$or = query.$or
-      ? [...query.$or, { productStatus: "Approved" }, { productStatus: { $exists: false } }]
+      ? [
+          ...query.$or,
+          { productStatus: "Approved" },
+          { productStatus: { $exists: false } },
+        ]
       : [{ productStatus: "Approved" }, { productStatus: { $exists: false } }];
 
     // Final query
@@ -166,20 +202,22 @@ const getAllProducts = async (req, res) => {
 
 const getVendorProducts = async (req, res) => {
   try {
+    const vendorId = req.user.id; // from token
+
     const products = await Product.find({
+      vendorID: vendorId,
       productStatus: { $in: ["Approved", "Pending", "Rejected"] },
-      createdBy: "vendor"
     }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
-      products
+      products,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching vendor products:", err);
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch products",
+      message: "Failed to fetch vendor products",
     });
   }
 };
@@ -189,12 +227,12 @@ const getVendorApprovalProducts = async (req, res) => {
   try {
     const products = await Product.find({
       isSentForApproval: true,
-      productStatus: "Pending"
+      productStatus: "Pending",
     });
 
     return res.status(200).json({
       success: true,
-      products
+      products,
     });
   } catch (err) {
     console.error(err);
@@ -269,15 +307,22 @@ const sendApprovedProduct = async (req, res) => {
 const rejectProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
-      req.params.id, {
-      productStatus: "Rejected",
-      rejectionReason: req.body.message
-    },
-      { new: true });
-    if (!product) { return res.status(404).json({ success: false, message: "Product not found" }); }
+      req.params.id,
+      {
+        productStatus: "Rejected",
+        rejectionReason: req.body.message,
+      },
+      { new: true }
+    );
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
     res.json({ success: true, message: "Product rejected", product });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
   }
-  catch (error) { res.status(500).json({ success: false, message: "Server error", error }); }
 };
 
 // Update product
@@ -294,61 +339,95 @@ const updateProduct = async (req, res) => {
     // Handle images
     let finalImages = [];
     if (req.body.existingImages) {
-      finalImages = typeof req.body.existingImages === "string"
-        ? JSON.parse(req.body.existingImages)
-        : req.body.existingImages;
+      finalImages =
+        typeof req.body.existingImages === "string"
+          ? JSON.parse(req.body.existingImages)
+          : req.body.existingImages;
     }
     if (req.files?.product_image_collection) {
-      finalImages = [...finalImages, ...req.files.product_image_collection.map((f) => f.filename)];
+      finalImages = [
+        ...finalImages,
+        ...req.files.product_image_collection.map((f) => f.filename),
+      ];
     }
     updateData.product_image_collection = finalImages;
 
     if (req.files?.product_lens_image1?.[0]) {
-      updateData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+      updateData.product_lens_image1 =
+        req.files.product_lens_image1[0].filename;
     }
     if (req.files?.product_lens_image2?.[0]) {
-      updateData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+      updateData.product_lens_image2 =
+        req.files.product_lens_image2[0].filename;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
-    if (!updatedProduct) return res.status(404).json({ success: false, message: "Product not found" });
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedProduct)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
 
-    return res.status(200).json({ success: true, message: "Product updated successfully", data: updatedProduct });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Product updated successfully",
+        data: updatedProduct,
+      });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error while updating product", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error while updating product",
+        error: error.message,
+      });
   }
 };
-
-
 
 const updateVendorProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const existingProduct = await Product.findById(id);
-    if (!existingProduct) return res.status(404).json({ success: false, message: "Product not found" });
+    if (!existingProduct)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
 
     let updateData = { ...req.body };
     // Handle images
     let finalImages = [];
     if (updateData.existingImages) {
-      finalImages = typeof updateData.existingImages === "string"
-        ? JSON.parse(updateData.existingImages)
-        : updateData.existingImages;
+      finalImages =
+        typeof updateData.existingImages === "string"
+          ? JSON.parse(updateData.existingImages)
+          : updateData.existingImages;
     }
 
     if (req.files?.product_image_collection) {
-      finalImages = [...finalImages, ...req.files.product_image_collection.map(f => f.filename)];
+      finalImages = [
+        ...finalImages,
+        ...req.files.product_image_collection.map((f) => f.filename),
+      ];
     }
     updateData.product_image_collection = finalImages;
 
     if (req.files?.product_lens_image1?.[0]) {
-      updateData.product_lens_image1 = req.files.product_lens_image1[0].filename;
+      updateData.product_lens_image1 =
+        req.files.product_lens_image1[0].filename;
     }
     if (req.files?.product_lens_image2?.[0]) {
-      updateData.product_lens_image2 = req.files.product_lens_image2[0].filename;
+      updateData.product_lens_image2 =
+        req.files.product_lens_image2[0].filename;
     }
     // Normalize stockAvailability
-    if (updateData.stockAvailability !== undefined && updateData.stockAvailability !== null) {
+    if (
+      updateData.stockAvailability !== undefined &&
+      updateData.stockAvailability !== null
+    ) {
       // Convert to number
       const val = Array.isArray(updateData.stockAvailability)
         ? updateData.stockAvailability[0]
@@ -360,9 +439,13 @@ const updateVendorProduct = async (req, res) => {
 
     // Restrict updates if product is sent for approval
     if (existingProduct.isSentForApproval) {
-      const allowedFields = ["product_price", "product_sale_price", "stockAvailability"];
+      const allowedFields = [
+        "product_price",
+        "product_sale_price",
+        "stockAvailability",
+      ];
       updateData = Object.keys(updateData)
-        .filter(key => allowedFields.includes(key))
+        .filter((key) => allowedFields.includes(key))
         .reduce((obj, key) => {
           obj[key] = updateData[key];
           return obj;
@@ -374,29 +457,49 @@ const updateVendorProduct = async (req, res) => {
       runValidators: true,
     });
 
-    return res.status(200).json({ success: true, message: "Product updated successfully", data: updatedProduct, });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Product updated successfully",
+        data: updatedProduct,
+      });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error while updating product", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error while updating product",
+        error: error.message,
+      });
   }
 };
 
-
-
 const deleteProduct = async (req, res) => {
   try {
-    const { id } = req.params;   // product ID from URL
+    const { id } = req.params; // product ID from URL
     const userId = req.user.id; // logged-in user ID
     const userRole = req.user.role;
 
     // Find product
     const product = await Product.findById(id);
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     // Vendor can delete only their own products
-    if (userRole === "vendor" && product.vendorID.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to delete this product" });
+    if (
+      userRole === "vendor" &&
+      product.vendorID.toString() !== userId.toString()
+    ) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Not authorized to delete this product",
+        });
     }
 
     // Delete product
@@ -407,7 +510,6 @@ const deleteProduct = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 const getProductsByCategoryAndSub = async (req, res) => {
   try {
@@ -428,8 +530,8 @@ const getProductsByCategoryAndSub = async (req, res) => {
       // productStatus: "Approved"
       $or: [
         { productStatus: "Approved" },
-        { productStatus: { $exists: false } }
-      ]
+        { productStatus: { $exists: false } },
+      ],
     });
 
     if (!products || products.length === 0) {
@@ -451,9 +553,17 @@ const searchProducts = async (req, res) => {
     if (search) query.product_name = { $regex: search, $options: "i" };
 
     const products = await Product.find(query).limit(20);
-    return res.status(200).json({ success: true, count: products.length, products });
+    return res
+      .status(200)
+      .json({ success: true, count: products.length, products });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error while searching products", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error while searching products",
+        error: error.message,
+      });
   }
 };
 
@@ -461,29 +571,43 @@ const searchProducts = async (req, res) => {
 const getProductBySubCatId = async (req, res) => {
   try {
     const { subCatId } = req.params;
-    if (!subCatId) return res.status(400).json({ success: false, message: "SubCategory ID is required" });
+    if (!subCatId)
+      return res
+        .status(400)
+        .json({ success: false, message: "SubCategory ID is required" });
 
     const products = await Product.find({
-      subCat_id: subCatId, $or: [
+      subCat_id: subCatId,
+      $or: [
         { productStatus: "Approved" },
-        { productStatus: { $exists: false } }
-      ]
+        { productStatus: { $exists: false } },
+      ],
     })
       .populate("cat_id", "categoryName")
       .populate("subCat_id", "subCategoryName");
 
     if (!products.length) {
-      return res.status(404).json({ success: false, message: "No products found for this SubCategory" });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "No products found for this SubCategory",
+        });
     }
 
-    return res.status(200).json({ success: true, count: products.length, data: products });
+    return res
+      .status(200)
+      .json({ success: true, count: products.length, data: products });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error while fetching products", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error while fetching products",
+        error: error.message,
+      });
   }
 };
-
-
-
 
 const applyVendorDiscount = async (req, res) => {
   try {
@@ -544,12 +668,6 @@ const applyVendorDiscount = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
 module.exports = {
   addProduct,
   getAllProducts,
@@ -566,5 +684,5 @@ module.exports = {
   sendApprovedProduct,
   rejectProduct,
   updateVendorProduct,
-  applyVendorDiscount
+  applyVendorDiscount,
 };
