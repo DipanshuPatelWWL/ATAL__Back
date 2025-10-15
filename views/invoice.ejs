@@ -150,14 +150,19 @@
         </tr>
       </thead>
       <tbody>
-        <% order.cartItems.forEach((item, i)=> { %>
+        <% order.cartItems.forEach((item, i)=> {
+          const basePrice = item.price || 0;
+          const lensPrice = item.lens && item.lens.totalPrice ? item.lens.totalPrice : 0;
+          const policyPrice = item.policy && item.policy.price ? item.policy.price : 0;
+          const totalItemPrice = basePrice + lensPrice + policyPrice;
+          %>
           <tr>
             <td>
               <%= i + 1 %>
             </td>
             <td>
               <strong>
-                <%= item.name %>
+                <%= item.name %>($<%= item.price %>)
               </strong>
 
               <% if (item.policy && item.policy.name) { %>
@@ -175,16 +180,16 @@
             <td>
               <%= item.quantity %>
             </td>
-            <td>$<%= item.price.toFixed(2) %>
+            <td>$<%= totalItemPrice.toFixed(2) %>
             </td>
-            <td>$<%= (item.price * item.quantity).toFixed(2) %>
+            <td>$<%= (totalItemPrice * item.quantity).toFixed(2) %>
             </td>
           </tr>
           <% }) %>
       </tbody>
     </table>
 
-    <div class="summary">
+    <!-- <div class="summary">
       <p>Subtotal: $<%= order.subtotal.toFixed(2) %>
       </p>
       <p>Tax: $<%= order.tax.toFixed(2) %>
@@ -193,7 +198,24 @@
       </p>
       <h3>Total: $<%= order.total.toFixed(2) %>
       </h3>
-    </div>
+    </div> -->
+    <div class="summary">
+  <p>Subtotal: $<%= order.subtotal.toFixed(2) %></p>
+
+  <% if (order.discount && order.discount > 0) { %>
+    <p style="color: green;">
+      Discount: -$<%= order.discount.toFixed(2) %>
+      <% if (order.coupon) { %>
+        (<%= order.coupon %>)
+      <% } %>
+    </p>
+  <% } %>
+
+  <p>Tax: $<%= order.tax.toFixed(2) %></p>
+  <p>Shipping: $<%= order.shipping.toFixed(2) %></p>
+  <h3>Total: $<%= order.total.toFixed(2) %></h3>
+</div>
+
   </div>
 
   <!-- Warranty Card -->
