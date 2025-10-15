@@ -150,14 +150,19 @@
         </tr>
       </thead>
       <tbody>
-        <% order.cartItems.forEach((item, i)=> { %>
+        <% order.cartItems.forEach((item, i)=> {
+          const basePrice = item.price || 0;
+          const lensPrice = item.lens && item.lens.totalPrice ? item.lens.totalPrice : 0;
+          const policyPrice = item.policy && item.policy.price ? item.policy.price : 0;
+          const totalItemPrice = basePrice + lensPrice + policyPrice;
+          %>
           <tr>
             <td>
               <%= i + 1 %>
             </td>
             <td>
               <strong>
-                <%= item.name %>
+                <%= item.name %>($<%= item.price %>)
               </strong>
 
               <% if (item.policy && item.policy.name) { %>
@@ -175,9 +180,9 @@
             <td>
               <%= item.quantity %>
             </td>
-            <td>$<%= item.price.toFixed(2) %>
+            <td>$<%= totalItemPrice.toFixed(2) %>
             </td>
-            <td>$<%= (item.price * item.quantity).toFixed(2) %>
+            <td>$<%= (totalItemPrice * item.quantity).toFixed(2) %>
             </td>
           </tr>
           <% }) %>
