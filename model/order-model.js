@@ -97,6 +97,8 @@ const orderSchema = new mongoose.Schema(
     shipping: Number,
     total: Number,
 
+    discount: { type: Number, default: 0 },
+
     paymentMethod: { type: String, default: "COD" },
     paymentStatus: { type: String, default: "Pending" },
     transactionId: String,
