@@ -1,15 +1,30 @@
+const mongoose = require("mongoose");
 const Message = require("../model/chat-model");
 
-// ---------------- Send Message ----------------
 exports.sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body;
+
+    const senderId = req.user?.id;
+
+    // Validate sender and receiver
+    if (!senderId || !receiverId || !text) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(senderId)) {
+      return res.status(400).json({ message: "Invalid sender ID" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+      return res.status(400).json({ message: "Invalid receiver ID" });
+    }
+
     if (!receiverId || !text) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const message = await Message.create({
-      sender: req.user.id,
+      sender: senderId,
       receiver: receiverId,
       text,
     });
@@ -21,15 +36,24 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// ---------------- Get Messages With a User ----------------
+// --- Get Messages With a User -----
 exports.getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
 
+    const senderId = req.user?.id;
+
+    if (
+      !mongoose.Types.ObjectId.isValid(senderId) ||
+      !mongoose.Types.ObjectId.isValid(userId)
+    ) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
     const messages = await Message.find({
       $or: [
-        { sender: req.user.id, receiver: userId },
-        { sender: userId, receiver: req.user.id },
+        { sender: senderId, receiver: userId },
+        { sender: userId, receiver: senderId },
       ],
     }).sort({ createdAt: 1 });
 
@@ -40,9 +64,16 @@ exports.getMessages = async (req, res) => {
   }
 };
 
-
 exports.deleteMessage = async (req, res) => {
   const msgId = req.params.id;
+  const userId = req.user?.id;
+
+  if (
+    !mongoose.Types.ObjectId.isValid(msgId) ||
+    !mongoose.Types.ObjectId.isValid(userId)
+  ) {
+    return res.status(400).json({ message: "Invalid ID" });
+  }
 
   try {
     const message = await Message.findById(msgId);
@@ -53,7 +84,9 @@ exports.deleteMessage = async (req, res) => {
 
     // Optional: only allow sender to delete their own message
     if (req.user.id.toString() !== message.sender.toString()) {
-      return res.status(403).json({ message: "You can delete only your own messages" });
+      return res
+        .status(403)
+        .json({ message: "You can delete only your own messages" });
     }
 
     await message.deleteOne();
