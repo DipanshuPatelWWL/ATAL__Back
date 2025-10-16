@@ -189,7 +189,7 @@
       </tbody>
     </table>
 
-    <div class="summary">
+    <!-- <div class="summary">
       <p>Subtotal: $<%= order.subtotal.toFixed(2) %>
       </p>
       <p>Tax: $<%= order.tax.toFixed(2) %>
@@ -198,7 +198,24 @@
       </p>
       <h3>Total: $<%= order.total.toFixed(2) %>
       </h3>
-    </div>
+    </div> -->
+    <div class="summary">
+  <p>Subtotal: $<%= order.subtotal.toFixed(2) %></p>
+
+  <% if (order.discount && order.discount > 0) { %>
+    <p style="color: green;">
+      Discount: -$<%= order.discount.toFixed(2) %>
+      <% if (order.coupon) { %>
+        (<%= order.coupon %>)
+      <% } %>
+    </p>
+  <% } %>
+
+  <p>Tax: $<%= order.tax.toFixed(2) %></p>
+  <p>Shipping: $<%= order.shipping.toFixed(2) %></p>
+  <h3>Total: $<%= order.total.toFixed(2) %></h3>
+</div>
+
   </div>
 
   <!-- Warranty Card -->
