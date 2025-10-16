@@ -31,8 +31,7 @@ const registerCustomer = async (req, res) => {
       }
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newCustomer = new Customer({
       firstName,
@@ -46,7 +45,7 @@ const registerCustomer = async (req, res) => {
       address,
       communicationPreference,
       marketingOptIn,
-      prescriptionFile: req.file ? req.file.path : null,
+      prescriptionFile: req.file ? req.file.filename : null,
     });
 
     await newCustomer.save();
@@ -71,7 +70,6 @@ const fetchCustomerById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate ID
     if (!id || id === "null") {
       return res.status(400).json({
         success: false,
@@ -80,7 +78,6 @@ const fetchCustomerById = async (req, res) => {
     }
 
     const customer = await Customer.findById(id);
-
     if (!customer) {
       return res.status(404).json({
         success: false,
@@ -103,65 +100,76 @@ const fetchCustomerById = async (req, res) => {
 };
 
 const updateCustomer = async (req, res) => {
-  if (!id || id === "null") {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid customer ID",
-    });
-  }
-
   try {
-    const { id } = req.params;
     const {
       firstName,
       lastName,
       dateOfBirth,
       mobilePhone,
       email,
-      password,
       address,
+      password,
     } = req.body;
+    const customerId = req.params.id;
 
-    const updatefields = {
+    // Check if email already exists for another user
+    const existingEmail = await Customer.findOne({
+      email,
+      _id: { $ne: customerId }, // use customerId, not undefined id
+    });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already exists." });
+    }
+
+    // Check if mobile number already exists for another user
+    const existingMobile = await Customer.findOne({
+      mobilePhone,
+      _id: { $ne: customerId }, // use customerId
+    });
+    if (existingMobile) {
+      return res.status(400).json({ message: "Mobile number already exists." });
+    }
+
+    const updateFields = {
       firstName,
       lastName,
       dateOfBirth,
       mobilePhone,
       email,
-      password,
       address,
     };
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      updatefields.password = hashedPassword;
+      updateFields.password = hashedPassword;
     }
 
-    if (req.files?.profileImage) {
-      updatefields.profileImage = req.files.profileImage[0].filename;
-    }
-    if (req.files?.prescriptionFile) {
-      updatefields.prescriptionFile = req.files.prescriptionFile[0].filename;
-    }
+    // Handle file uploads if any
+    if (req.files?.profileImage)
+      updateFields.profileImage = req.files.profileImage[0].filename;
+    if (req.files?.prescriptionFile)
+      updateFields.prescriptionFile = req.files.prescriptionFile[0].filename;
 
-    const updatedCustomer = await Customer.findByIdAndUpdate(id, updatefields, {
-      new: true,
+    const updatedCustomer = await Customer.findByIdAndUpdate(
+      customerId,
+      updateFields,
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Customer updated successfully",
+      data: updatedCustomer,
     });
-    if (!updatedCustomer) {
-      return res.status(400).json({
-        success: false,
-        message: "Customer Not found",
-        data: updatedCustomer,
-      });
-    }
+  } catch (err) {
+    console.error("Error updating customer:", err);
     res
-      .status(200)
-      .json({ success: true, message: "Customer Updated Successfully" });
-  } catch (error) {
-    return res
       .status(500)
-      .json({ success: false, message: "Customer Not updated" });
+      .json({ message: "Error updating customer", error: err.message });
   }
 };
 
-module.exports = { registerCustomer, fetchCustomerById, updateCustomer };
+module.exports = {
+  registerCustomer,
+  fetchCustomerById,
+  updateCustomer,
+};
