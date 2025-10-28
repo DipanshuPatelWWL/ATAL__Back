@@ -323,7 +323,7 @@ exports.getAllOrders = async (req, res) => {
 exports.getAllVendorOrders = async (req, res) => {
   try {
     // Fetch all orders
-    const orders = await Order.find();
+    const orders = await Order.find().sort({ createdAt: -1 });
 
     // Filter orders where at least one cartItem is created by a vendor
     const vendorOrders = orders.filter((order) =>
