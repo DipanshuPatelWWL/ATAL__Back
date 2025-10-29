@@ -34,6 +34,7 @@ const insurancePolicy = require("./routes/insurancePolicyRoutes");
 const insuranceClaim = require("./routes/insuranceClaimRoutes");
 const chatRoute = require("./routes/chat-routes");
 const database = require("./config/config");
+const paypalRoutes = require("./routes/paypal-routes");
 const cors = require("cors");
 
 
@@ -115,6 +116,7 @@ app.use("/api", couponRoutes);
 app.use("/api", insurancePolicy)
 app.use("/api", insuranceClaim)
 app.use("/api", chatRoute)
+app.use("/api/paypal", paypalRoutes);
 
 
 
