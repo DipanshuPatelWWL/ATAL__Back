@@ -4,11 +4,12 @@ const paymentTemplate = require("../utils/paymentTemplate");
 const generateTrackingNumber = require("../utils/generateTrackingNumber");
 const productModel = require("../model/product-model");
 const dayjs = require("dayjs");
+const { verifyPayPalPayment } = require("../utils/paypal")
 
 
 exports.createOrder = async (req, res) => {
   try {
-    const { email, cartItems, total } = req.body;
+    const { email, cartItems, total, paymentMethod, transactionId } = req.body;
 
     if (!cartItems || cartItems.length === 0) {
       return res
@@ -19,6 +20,31 @@ exports.createOrder = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Email is required" });
+    }
+
+    // Verify payment if PayPal
+    if (paymentMethod === "PayPal") {
+      if (!transactionId)
+        return res.status(400).json({ success: false, message: "Transaction ID missing" });
+
+      const verified = await verifyPayPalPayment(transactionId);
+
+      if (verified.status !== "COMPLETED") {
+        return res.status(400).json({
+          success: false,
+          message: "Payment not verified with PayPal",
+          verifiedStatus: verified.status,
+        });
+      }
+
+      // Optional: ensure amount matches
+      const amount = verified.purchase_units?.[0]?.amount?.value;
+      if (parseFloat(amount) !== parseFloat(total)) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment total mismatch",
+        });
+      }
     }
 
     const orderDate = new Date();
@@ -324,45 +350,6 @@ exports.getAllOrders = async (req, res) => {
   }
 };
 
-// exports.getAllVendorOrders = async (req, res) => {
-//   try {
-//     // Fetch all orders
-//     const orders = await Order.find();
-
-//     // Filter orders where at least one cartItem is created by a vendor
-//     const vendorOrders = orders.filter((order) =>
-//       order.cartItems.some(
-//         (item) => item.createdBy && item.createdBy !== "admin"
-//       )
-//     );
-
-//     // if (!vendorOrders.length) {
-//     //   return res
-//     //     .status(404)
-//     //     .json({ success: false, message: "No vendor orders found" });
-//     // }
-//     let updatedOrders = [];
-//     for (let order of vendorOrders) {
-//       const changed = checkAndUpdateExpiredPolicies(order);
-//       if (changed) await order.save();
-//       updatedOrders.push(order);
-//     }
-
-//     if (!updatedOrders.length) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "No vendor orders found" });
-//     }
-
-//     res.json({ success: true, orders: vendorOrders });
-//   } catch (err) {
-//     console.error("Get Orders Error:", err);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Failed to fetch vendor orders" });
-//   }
-// };
-
 exports.getAllVendorOrders = async (req, res) => {
   try {
 
@@ -491,3 +478,4 @@ exports.payPolicy = async (req, res) => {
       .json({ success: false, message: "Failed to pay for policy" });
   }
 };
+
