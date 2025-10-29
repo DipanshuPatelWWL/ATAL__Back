@@ -21,7 +21,6 @@ const createEyeService = async (req, res) => {
             message: "Eye Service saved successfully",
             data: newEyeService
         })
-        alert()
 
     } catch (error) {
         return res.status(500).json({
