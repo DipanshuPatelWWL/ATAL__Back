@@ -5,7 +5,7 @@ const generateTrackingNumber = require("../utils/generateTrackingNumber");
 const productModel = require("../model/product-model");
 const dayjs = require("dayjs");
 
-//create order
+
 exports.createOrder = async (req, res) => {
   try {
     const { email, cartItems, total } = req.body;
@@ -40,7 +40,7 @@ exports.createOrder = async (req, res) => {
             expiryDate,
             status: "Active",
             active: true,
-            expired: false, // new
+            expired: false,
           };
         }
 
@@ -52,6 +52,10 @@ exports.createOrder = async (req, res) => {
           subCategoryName: item.subCategoryName,
           quantity: item.quantity || 1,
           createdBy: product?.createdBy || "admin",
+          vendorID:
+            item.vendorID ||
+            item.vendorId ||
+            null,
 
           product_size: item.product_size || [],
           product_color: item.product_color || [],
@@ -79,7 +83,6 @@ exports.createOrder = async (req, res) => {
     const order = new Order(orderData);
     await order.save();
 
-    // Send email (optional)
     try {
       await transporter.sendMail({
         from: `"ATAL OPTICALS" <${process.env.EMAIL_USER}>`,
@@ -101,6 +104,7 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 const checkAndUpdateExpiredPolicies = (order) => {
   const now = new Date();
@@ -320,39 +324,60 @@ exports.getAllOrders = async (req, res) => {
   }
 };
 
+// exports.getAllVendorOrders = async (req, res) => {
+//   try {
+//     // Fetch all orders
+//     const orders = await Order.find();
+
+//     // Filter orders where at least one cartItem is created by a vendor
+//     const vendorOrders = orders.filter((order) =>
+//       order.cartItems.some(
+//         (item) => item.createdBy && item.createdBy !== "admin"
+//       )
+//     );
+
+//     // if (!vendorOrders.length) {
+//     //   return res
+//     //     .status(404)
+//     //     .json({ success: false, message: "No vendor orders found" });
+//     // }
+//     let updatedOrders = [];
+//     for (let order of vendorOrders) {
+//       const changed = checkAndUpdateExpiredPolicies(order);
+//       if (changed) await order.save();
+//       updatedOrders.push(order);
+//     }
+
+//     if (!updatedOrders.length) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "No vendor orders found" });
+//     }
+
+//     res.json({ success: true, orders: vendorOrders });
+//   } catch (err) {
+//     console.error("Get Orders Error:", err);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Failed to fetch vendor orders" });
+//   }
+// };
+
 exports.getAllVendorOrders = async (req, res) => {
   try {
+
     // Fetch all orders
-    const orders = await Order.find().sort({ createdAt: -1 });
 
-    // Filter orders where at least one cartItem is created by a vendor
-    const vendorOrders = orders.filter((order) =>
-      order.cartItems.some(
-        (item) => item.createdBy && item.createdBy !== "admin"
-      )
-    );
+    const vendorId = req.user._id;
 
-    // if (!vendorOrders.length) {
-    //   return res
-    //     .status(404)
-    //     .json({ success: false, message: "No vendor orders found" });
-    // }
-    let updatedOrders = [];
-    for (let order of vendorOrders) {
-      const changed = checkAndUpdateExpiredPolicies(order);
-      if (changed) await order.save();
-      updatedOrders.push(order);
-    }
 
-    if (!updatedOrders.length) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No vendor orders found" });
-    }
+    const orders = await Order.find({
+      "cartItems.vendorID": vendorId,
+    }).sort({ createdAt: -1 });
 
-    res.json({ success: true, orders: vendorOrders });
+    res.json({ success: true, orders });
   } catch (err) {
-    console.error("Get Orders Error:", err);
+    console.error("Get Vendor Orders Error:", err);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch vendor orders" });
