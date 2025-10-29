@@ -72,7 +72,7 @@ exports.createOrder = async (req, res) => {
     const orderData = {
       ...req.body,
       userId: req.user?.id || req.body.userId,
-      cartItems: cartItemsWithDetails, 
+      cartItems: cartItemsWithDetails,
       total: total || 0,
       trackingNumber,
       trackingHistory: [
@@ -365,7 +365,11 @@ exports.getAllOrders = async (req, res) => {
 
 exports.getAllVendorOrders = async (req, res) => {
   try {
+
+    // Fetch all orders
+
     const vendorId = req.user._id;
+
 
     const orders = await Order.find({
       "cartItems.vendorID": vendorId,
