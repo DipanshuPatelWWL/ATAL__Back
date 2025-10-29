@@ -352,7 +352,11 @@ exports.getAllOrders = async (req, res) => {
 
 exports.getAllVendorOrders = async (req, res) => {
   try {
+
+    // Fetch all orders
+
     const vendorId = req.user._id;
+
 
     const orders = await Order.find({
       "cartItems.vendorID": vendorId,
